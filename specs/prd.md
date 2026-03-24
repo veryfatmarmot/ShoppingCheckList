@@ -1,88 +1,252 @@
 # PRD — Shopping List App (MVP)
 
-## Product
+---
+
+# Product Overview
+
 A cross-platform shopping list app (Android, iOS, Web via Expo) for a single shared Google account across devices.
 
-## Goal
-Collaboratively manage one active shopping list with offline support, near real-time sync, and a reusable catalog.
+The app enables multiple devices to collaboratively manage a single shopping list with offline support and near real-time synchronization.
 
-## Target User
-A household using one shared Google account.
+---
 
-## Core Value
-Fast shared shopping with:
+# Goal
+
+Enable fast, frictionless shared shopping with:
+
 - One active list
 - Reusable catalog
 - Grouping by store sections
-- Offline-first
-- Near-real-time sync
+- Offline-first behavior
+- Near real-time sync across devices
 
-## MVP Scope
+---
 
-### Included
-- Google sign-in
-- one active shopping list
-- catalog of reusable items
-- one-time items
-- groups with manual ordering
-- add item from catalog to active list
-- add one-time item directly to active list
-- edit catalog item in modal
-- edit one-time list item in modal
-- mark item as bought, removing it from active list
-- catalog grouped by groups, sorted alphabetically within groups
-- shopping list grouped by groups, sorted alphabetically within groups
-- offline-first local work
-- Firebase sync
-- local-only undo for recent deletions/buys
+# Target User
 
-### Excluded
-- multiple lists
-- account sharing between multiple Google accounts
-- images
-- barcode scanning
-- voice input
-- recurring items
-- history UI
-- cross-device undo
-- guaranteed duplicate prevention in offline conflicts
+- Household using one shared Google account
+- Typically 2+ people shopping simultaneously
 
-## Functional Requirements
+---
+
+# Core Value Proposition
+
+- Minimal friction when adding items
+- Reliable sync between devices
+- Works without internet
+- Structured shopping (groups)
+- Reusable catalog for speed
+
+---
+
+# MVP Scope
+
+## Included
 
 ### Authentication
-- User signs in with Google.
-- Data is scoped under that user’s Firebase Auth UID.
+- Google sign-in via Firebase Auth
 
-### Shopping list
-- Only one active list exists.
-- User can add a catalog item with quantity.
-- User can add a one-time item with quantity and item fields.
-- Active list item is unique by its own ListItem ID.
-- Marking item as bought deletes the ListItem.
-- Empty shopping list shows “Shopping Complete”.
+### Core Data
+- One active shopping list
+- Catalog of reusable items
+- One-time items (no catalog reference)
+- Groups with manual ordering
+
+### Shopping List
+- Add item from catalog with quantity
+- Add one-time item with full data
+- Edit list item (modal)
+- Mark item as bought → removes from list
+- Local undo for recent removals
 
 ### Catalog
-- Catalog stores reusable items.
-- Catalog item name and other fields are editable.
-- Duplicate names should be blocked best-effort using normalized name among non-deleted catalog items.
-- Duplicates may still exist due to offline conflicts.
+- Add / edit catalog item (modal)
+- Soft delete catalog item
+- Duplicate prevention (best-effort)
 
 ### Groups
-- Groups are user-managed.
-- Groups have name, normalizedName, and manual order.
-- Missing or null group means Ungrouped in UI.
-- If referenced group does not exist, item is treated as Ungrouped.
+- Create / edit / delete groups
+- Manual ordering of groups
 
-### Offline and sync
-- App must work offline.
-- Sync uses last-write-wins with client timestamps.
-- Whole-record overwrite semantics per write.
-- Catalog deletion is soft via deleted: true.
-- Deleted catalog item may be recreated later by a newer write using the same ID.
+### UI Behavior
+- Catalog grouped by groups
+- Shopping list grouped by groups
+- Alphabetical sorting inside groups
+- Empty state: "Shopping Complete"
 
-## Non-functional requirements
-- Fast startup for small/medium data sets
-- Load all user data for MVP
-- Simple, maintainable domain model
-- AI-friendly codebase structure
-- Deterministic normalization and validation rules
+### Sync
+- Offline-first
+- Firestore sync
+- Last-write-wins
+- Full document overwrite
+
+---
+
+## Excluded (MVP)
+
+- Multiple shopping lists
+- Multi-account sharing
+- Images
+- Cross-device undo
+- Strong duplicate guarantees
+
+---
+
+# Functional Requirements
+
+## Authentication
+
+- User signs in via Google
+- Firebase Auth provides `userId`
+- All data is scoped under:
+  users/{userId}/...
+
+---
+
+## Shopping List
+
+- Only one active list exists per user
+
+### Add from catalog
+- Select catalog item
+- Specify quantity
+- Create ListItem with snapshot data
+
+### Add one-time item
+- User provides:
+  - name
+  - quantity
+  - group
+  - note
+
+### Edit list item
+- Full overwrite of ListItem
+
+### Mark as bought
+- ListItem is deleted
+
+### Undo
+- Local-only
+- Recreates ListItem
+
+### Empty state
+- Show: "Shopping Complete"
+
+---
+
+## Catalog
+
+- Stores reusable items
+
+### Fields
+- name
+- normalizedName
+- groupId
+- note
+
+### Behavior
+- Edit allowed anytime
+- Soft delete via `deleted = true`
+
+### Duplicate handling
+- Prevent duplicates (best-effort)
+- Based on normalizedName
+- Only among non-deleted items
+- Duplicates may still occur (offline)
+
+---
+
+## Groups
+
+- User-managed collection
+
+### Fields
+- name
+- normalizedName
+- order
+
+### Behavior
+- Manual ordering
+- Deletion allowed
+
+### Rendering rule
+- Missing group → Ungrouped
+
+---
+
+## Offline & Sync
+
+### Offline
+- Full functionality offline
+- Writes stored locally
+
+### Sync
+- Firestore sync on reconnect
+
+### Conflict resolution
+- Last-write-wins using updatedAt
+
+### Write model
+- Full document overwrite
+
+### Deletion
+- Catalog: soft delete
+- ListItem: hard delete
+- Group: hard delete
+
+### Resurrection
+- CatalogItem can be restored by newer write
+
+---
+
+# Non-Functional Requirements
+
+## Performance
+- Fast startup
+- Load full dataset (MVP assumption: small data)
+
+## Reliability
+- Deterministic conflict resolution
+- No UI breakage from missing references
+
+## Maintainability
+- Simple data model
+- Clear separation:
+  - UX
+  - Domain
+  - Storage
+
+## AI-Friendliness
+- Explicit contracts
+- No hidden behavior
+- Deterministic flows
+
+---
+
+# Constraints & Known Tradeoffs
+
+## Client timestamps
+- May cause ordering inconsistencies
+- Accepted for MVP
+
+## Duplicate items
+- Not fully preventable offline
+- If present, all copies are displayed on UI and the user can resolve
+
+## Full overwrite model
+- Simpler implementation
+- Less efficient than partial updates
+
+---
+
+# Success Criteria (MVP)
+
+- Users can:
+  - add items quickly
+  - shop simultaneously on multiple devices
+  - see near real-time updates
+  - use app offline without data loss
+
+- No data corruption under concurrent usage
+
+- UX remains simple and predictable
