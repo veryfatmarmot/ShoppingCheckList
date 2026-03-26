@@ -13,6 +13,7 @@
 - ESLint
 - Prettier
 - Google login
+- Expo Auth Session
 
 ## Package layout
 - `apps/mobile`
@@ -61,6 +62,12 @@
 Use:
 - Auth
 - Firestore
+
+## Auth implementation
+- Google login uses Expo Auth Session + Firebase credential exchange
+
+## Testing
+- Vitest for domain-focused tests
 
 Do not use for MVP:
 - custom backend server

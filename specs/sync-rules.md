@@ -112,7 +112,7 @@ This is a BEHAVIORAL contract. It must align with:
 
 ## Undo (Local Only)
 - Store last N deleted items locally
-- Undo = recreate ListItem via normal create flow
+- Undo = recreate ListItem via normal create flow with a new ID
 - Not synchronized across devices
 
 ---
@@ -128,7 +128,8 @@ This is a BEHAVIORAL contract. It must align with:
 - updatedAt = now
 
 ## Delete
-- Hard delete document
+- First overwrite every referencing CatalogItem and ListItem so `itemData.groupId = null` with a newer `updatedAt`
+- Then hard delete document
 
 ---
 

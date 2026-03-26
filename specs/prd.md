@@ -45,6 +45,7 @@ Enable fast, frictionless shared shopping with:
 
 ### Authentication
 - Google sign-in via Firebase Auth
+- Expo Auth Session + Firebase credential exchange
 
 ### Core Data
 - One active shopping list
@@ -67,6 +68,7 @@ Enable fast, frictionless shared shopping with:
 ### Groups
 - Create / edit / delete groups
 - Manual ordering of groups
+- Group deletion clears `groupId` on all referencing catalog and list items
 
 ### UI Behavior
 - Catalog grouped by groups
@@ -127,7 +129,7 @@ Enable fast, frictionless shared shopping with:
 
 ### Undo
 - Local-only
-- Recreates ListItem
+- Recreates ListItem with a new ID
 
 ### Empty state
 - Show: "Shopping Complete"
@@ -192,7 +194,7 @@ Enable fast, frictionless shared shopping with:
 ### Deletion
 - Catalog: soft delete
 - ListItem: hard delete
-- Group: hard delete
+- Group: clear references to `groupId = null`, then hard delete
 
 ### Resurrection
 - CatalogItem can be restored by newer write

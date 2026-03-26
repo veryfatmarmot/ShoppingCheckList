@@ -33,6 +33,7 @@ It must align with:
 
 ## Behavior
 - Trigger Google OAuth
+- Use Expo Auth Session and exchange the Google credential with Firebase Auth
 - On success:
   - retrieve userId (Google UID)
   - initialize Firestore user scope
@@ -111,6 +112,8 @@ It must align with:
 - else:
   - open Add List Item From Catalog modal
 
+`already in list` means a ListItem exists with the same `catalogItemId`
+
 ### Edit item
 - open Add/Edit Catalog Item modal
 
@@ -143,6 +146,8 @@ It must align with:
 ### Delete group
 - open Delete Confirmation modal
 - on confirm:
+  - overwrite affected catalog items with `groupId = null`
+  - overwrite affected list items with `groupId = null`
   - delete group
   - affected items become Ungrouped
 
@@ -250,7 +255,7 @@ It must align with:
 
 ## Undo
 - local only
-- recreates deleted items
+- recreates deleted items with a new ID
 
 ---
 

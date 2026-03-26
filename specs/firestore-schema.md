@@ -152,8 +152,9 @@ users/{userId}/groups/{groupId}
   new.updatedAt > existing.updatedAt
   ```
 
-- Firestore does NOT enforce this automatically  
-- Client is responsible for maintaining this rule
+- Firestore security rules may reject stale writes by comparing `request.resource.data.updatedAt` with the existing document
+- Firestore does NOT resolve conflicts automatically
+- Client repositories are still responsible for writing data that follows this rule
 
 ---
 
@@ -180,7 +181,8 @@ If a write uses an existing ID:
 - Hard delete (document removed)
 
 ### Group
-- Hard delete (document removed)
+- Before hard delete, overwrite every referencing catalog item and list item with `itemData.groupId = null` and a newer `updatedAt`
+- Then hard delete the group document
 
 ---
 

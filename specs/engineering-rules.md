@@ -49,6 +49,9 @@ Prioritize domain tests:
 - group fallback
 - sorting
 
+Use:
+- Vitest
+
 ## Spec discipline
 - follow specs exactly
 - if implementation changes behavior, update the owning spec

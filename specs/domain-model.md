@@ -148,7 +148,7 @@ Represents an item in the active shopping list.
 - ListItem is physically deleted
 
 ### Undo
-- client recreates ListItem with same or new ID
+- client recreates ListItem with a new ID
 
 ---
 
@@ -184,6 +184,7 @@ Represents logical grouping (e.g. store section).
 - update updatedAt
 
 ### Delete
+- before delete, clear `groupId` to null on all referencing CatalogItem.itemData and ListItem.itemData
 - physically removed
 
 ---
