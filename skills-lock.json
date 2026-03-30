@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "firebase-firestore-standard": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "b6a8e3d169026dbfd519cc855abc9f103858acf9221895fbfc37b4f3b280ba84"
+    }
+  }
+}
