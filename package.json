@@ -8,6 +8,9 @@
   ],
   "scripts": {
     "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "mobile:start": "npm run start --workspace @shopping-check-list/mobile",
+    "mobile:android": "npm run android --workspace @shopping-check-list/mobile",
+    "mobile:web": "npm run web --workspace @shopping-check-list/mobile"
   }
 }
