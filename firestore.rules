@@ -1,0 +1,133 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // users/{userId}/catalogItems/{catalogItemId}
+    //   - id: string, required, must equal document ID
+    //   - createdAt: number, required, immutable
+    //   - updatedAt: number, required, must increase on update
+    //   - deleted: bool, required
+    //   - itemData: map, required
+    //     - name: string, required, 1..200 chars
+    //     - normalizedName: string, required, 1..200 chars
+    //     - groupId: string | null, required
+    //     - note: string, required, 0..1000 chars
+    //
+    // users/{userId}/listItems/{listItemId}
+    //   - id: string, required, must equal document ID
+    //   - catalogItemId: string | null, required
+    //   - quantity: number, required, > 0
+    //   - createdAt: number, required, immutable
+    //   - updatedAt: number, required, must increase on update
+    //   - itemData: map, required
+    //     - name: string, required, 1..200 chars
+    //     - normalizedName: string, required, 1..200 chars
+    //     - groupId: string | null, required
+    //     - note: string, required, 0..1000 chars
+    //
+    // users/{userId}/groups/{groupId}
+    //   - id: string, required, must equal document ID
+    //   - name: string, required, 1..200 chars
+    //   - normalizedName: string, required, 1..200 chars
+    //   - order: number, required
+    //   - createdAt: number, required, immutable
+    //   - updatedAt: number, required, must increase on update
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidOptionalString(value, maxLen) {
+      return value == null || (value is string && value.size() <= maxLen);
+    }
+
+    function isValidRequiredString(value, minLen, maxLen) {
+      return value is string && value.size() >= minLen && value.size() <= maxLen;
+    }
+
+    function isUnixMsNumber(value) {
+      return value is number && value >= 0;
+    }
+
+    function isValidItemData(data) {
+      return data is map &&
+        data.keys().hasOnly(['name', 'normalizedName', 'groupId', 'note']) &&
+        isValidRequiredString(data.name, 1, 200) &&
+        isValidRequiredString(data.normalizedName, 1, 200) &&
+        isValidOptionalString(data.groupId, 200) &&
+        (data.note is string && data.note.size() <= 1000);
+    }
+
+    function isValidCatalogItem(docId) {
+      let data = request.resource.data;
+      return data.keys().hasOnly(['id', 'createdAt', 'updatedAt', 'deleted', 'itemData']) &&
+        data.id == docId &&
+        isUnixMsNumber(data.createdAt) &&
+        isUnixMsNumber(data.updatedAt) &&
+        data.deleted is bool &&
+        isValidItemData(data.itemData);
+    }
+
+    function isValidListItem(docId) {
+      let data = request.resource.data;
+      return data.keys().hasOnly(['id', 'catalogItemId', 'quantity', 'createdAt', 'updatedAt', 'itemData']) &&
+        data.id == docId &&
+        isValidOptionalString(data.catalogItemId, 200) &&
+        data.quantity is number &&
+        data.quantity > 0 &&
+        isUnixMsNumber(data.createdAt) &&
+        isUnixMsNumber(data.updatedAt) &&
+        isValidItemData(data.itemData);
+    }
+
+    function isValidGroup(docId) {
+      let data = request.resource.data;
+      return data.keys().hasOnly(['id', 'name', 'normalizedName', 'order', 'createdAt', 'updatedAt']) &&
+        data.id == docId &&
+        isValidRequiredString(data.name, 1, 200) &&
+        isValidRequiredString(data.normalizedName, 1, 200) &&
+        data.order is number &&
+        isUnixMsNumber(data.createdAt) &&
+        isUnixMsNumber(data.updatedAt);
+    }
+
+    function isValidUpdateTimestamps() {
+      return request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.updatedAt is number &&
+        request.resource.data.updatedAt > resource.data.updatedAt;
+    }
+
+    match /users/{userId} {
+      allow read, write: if false;
+
+      match /catalogItems/{catalogItemId} {
+        allow read, delete: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidCatalogItem(catalogItemId);
+        allow update: if isOwner(userId) && isValidCatalogItem(catalogItemId) && isValidUpdateTimestamps();
+      }
+
+      match /listItems/{listItemId} {
+        allow read, delete: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidListItem(listItemId);
+        allow update: if isOwner(userId) && isValidListItem(listItemId) && isValidUpdateTimestamps();
+      }
+
+      match /groups/{groupId} {
+        allow read, delete: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidGroup(groupId);
+        allow update: if isOwner(userId) && isValidGroup(groupId) && isValidUpdateTimestamps();
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

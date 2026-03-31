@@ -11,7 +11,10 @@
                     "test":  "npm run test --workspaces --if-present",
                     "mobile:start":  "npm run start --workspace @shopping-check-list/mobile",
                     "mobile:android":  "npm run android --workspace @shopping-check-list/mobile",
-                    "mobile:web":  "npm run web --workspace @shopping-check-list/mobile"
+                    "mobile:web":  "npm run web --workspace @shopping-check-list/mobile",
+                    "firebase:rules": "npx firebase-tools@latest deploy --only firestore:rules",
+                    "firebase:indexes": "npx firebase-tools@latest deploy --only firestore:indexes",
+                    "firebase:firestore": "npx firebase-tools@latest deploy --only firestore"
                 },
     "dependencies":  {
                          "expo-router":  "~55.0.8"
