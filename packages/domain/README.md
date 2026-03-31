@@ -8,3 +8,4 @@ Current exports:
 - `CatalogItem`
 - `ListItem`
 - `Group`
+- `normalizeName`
