@@ -9,3 +9,9 @@ Current exports:
 - `ListItem`
 - `Group`
 - `normalizeName`
+- `validateName`
+- `validateQuantity`
+- `validateItemData`
+- `validateGroup`
+- `validateCatalogItem`
+- `validateListItem`
