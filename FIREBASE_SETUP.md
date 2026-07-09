@@ -8,6 +8,10 @@ This project already includes:
 - prototype Firestore rules in `firestore.rules`
 - empty Firestore index config in `firestore.indexes.json`
 - example environment variables in `.env.example`
+- Expo Auth Session wiring for Google sign-in
+- Android Firebase config file at `apps/mobile/google-services.json`
+- Expo development-build dependency for native Android auth testing
+- automatic env sync from repo root `.env` to `apps/mobile/.env` before Expo commands
 
 ## What you need to do
 
@@ -30,7 +34,7 @@ In Project settings:
 - Give it a nickname
 - Copy the Firebase config values
 
-These values go into a local `.env` file at the repo root.
+These values go into the repo root `.env` file.
 
 Required keys:
 
@@ -60,7 +64,27 @@ In Firebase console:
 Official docs:
 - https://firebase.google.com/docs/auth/web/google-signin
 
-### 5. Enable Cloud Firestore
+### 5. Create Google OAuth client IDs for Expo Auth Session
+
+You also need Google OAuth client IDs for the Expo Auth Session flow.
+
+Required for current targets:
+
+- Web OAuth client ID -> `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`
+- Android OAuth client ID -> `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`
+
+Optional for later iOS support:
+
+- iOS OAuth client ID -> `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`
+
+These are created in Google Cloud / Firebase-linked project credentials, not in the Firebase web config block.
+
+Note: `google-services.json` gives the Firebase Android app config and package name, but it does not replace these OAuth client IDs for Expo Auth Session.
+
+Expo docs:
+- https://docs.expo.dev/develop/authentication/
+
+### 6. Enable Cloud Firestore
 
 In Firebase console:
 
@@ -72,7 +96,7 @@ In Firebase console:
 Official docs:
 - https://firebase.google.com/docs/firestore
 
-### 6. Log in to Firebase CLI
+### 7. Log in to Firebase CLI
 
 Run:
 
@@ -80,7 +104,7 @@ Run:
 npx firebase-tools@latest login
 ```
 
-### 7. Link the CLI to your Firebase project
+### 8. Link the CLI to your Firebase project
 
 Run:
 
@@ -90,7 +114,7 @@ npx firebase-tools@latest use --add
 
 Select your Firebase project.
 
-### 8. Deploy Firestore rules and indexes
+### 9. Deploy Firestore rules and indexes
 
 From the repo root:
 
@@ -105,8 +129,30 @@ npm run firebase:rules
 npm run firebase:indexes
 ```
 
+### 10. Build Android natively once before collecting SHA-1
+
+Expo Go is not enough for local Android OAuth testing.
+
+From the repo root, use the development-build path:
+
+```powershell
+npm.cmd run mobile:android:dev
+```
+
+That generates and runs the native Android project locally. Make sure `ANDROID_HOME` points to your Android SDK before running it.
+
+The repo will automatically sync the root `.env` into `apps/mobile/.env` before Expo commands run.
+
+After that, read the debug keystore fingerprint:
+
+```powershell
+& "$env:JAVA_HOME\bin\keytool.exe" -list -v -alias androiddebugkey -keystore "D:\Projects\ShoppingCheckList\apps\mobile\android\app\debug.keystore" -storepass android -keypass android
+```
+
+Use that `SHA1:` value when creating the Android OAuth client for package `dev.marmot.shoppingchecklist`.
+
 ## Notes
 
 - The current Firestore rules are a prototype and should be reviewed as the data layer evolves.
-- Google sign-in inside the app is implemented in a later ticket (`M1-T1`).
+- Google sign-in wiring is implemented, but auth state/guarding lands in later tickets.
 - Firestore offline persistence is a later ticket (`M5-T1`).
