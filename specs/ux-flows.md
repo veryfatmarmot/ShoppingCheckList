@@ -69,6 +69,7 @@ It must align with:
 ## Item Row
 - name
 - quantity
+- note (secondary line, only if non-empty)
 - checkbox (mark bought)
 
 ## Interactions
@@ -102,6 +103,7 @@ It must align with:
 
 ## Item Row
 - name
+- note (secondary line, only if non-empty)
 - add button [+]
 
 ## Interactions
@@ -247,6 +249,10 @@ It must align with:
 ## Duplicate Handling
 - prevent in UI if possible
 - tolerate if exists
+
+## Note Display
+- shown as a secondary line under the item name in both Shopping List and Catalog rows
+- only rendered when non-empty; empty note takes no row space
 
 ## Offline
 - show indicator

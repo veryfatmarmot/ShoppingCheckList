@@ -179,7 +179,12 @@ Represents logical grouping (e.g. store section).
 
 ## Behavior
 
-### Create / Update
+### Create
+- default `order` to (max existing `order` among groups) + 1; 0 if no groups exist yet
+- recompute normalizedName on name change
+- update updatedAt
+
+### Update
 - recompute normalizedName on name change
 - update updatedAt
 

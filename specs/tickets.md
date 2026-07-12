@@ -186,7 +186,7 @@ Each ticket must be:
 - Show online/offline indicator
 
 ## M5-T3 Undo Buffer
-- Store last N deletions locally
+- Store last 10 deletions locally (N = 10)
 
 ## M5-T4 Undo Action
 - Recreate ListItem

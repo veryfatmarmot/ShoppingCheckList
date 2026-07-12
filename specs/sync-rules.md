@@ -136,7 +136,7 @@ This is a BEHAVIORAL contract. It must align with:
 - Hard delete document
 
 ## Undo (Local Only)
-- Store last N deleted items locally
+- Store last 10 deleted items locally (N = 10)
 - Undo = recreate ListItem via normal create flow with a new ID
 - Not synchronized across devices
 
@@ -144,7 +144,12 @@ This is a BEHAVIORAL contract. It must align with:
 
 # Group Sync Rules
 
-## Create / Edit
+## Create
+- Default `order` to (max existing `order` among groups) + 1; 0 if no groups exist yet
+- Recompute normalizedName on name change
+- updatedAt = now
+
+## Edit
 - Recompute normalizedName on name change
 - updatedAt = now
 
