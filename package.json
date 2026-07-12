@@ -16,9 +16,6 @@
         "firebase:indexes": "npx firebase-tools@latest deploy --only firestore:indexes",
         "firebase:firestore": "npx firebase-tools@latest deploy --only firestore"
     },
-    "dependencies": {
-        "expo-router": "~55.0.8"
-    },
     "devDependencies": {
         "vitest": "^3.2.4"
     },
