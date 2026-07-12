@@ -1,0 +1,12 @@
+# Normalize all text files to LF in the repo and on checkout so that
+# Prettier's line-ending check behaves the same on every machine.
+* text=auto eol=lf
+
+# Windows scripts need CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.keystore binary

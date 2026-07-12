@@ -8,8 +8,8 @@ export default function HomeScreen() {
         <Text style={styles.eyebrow}>Shopping Check List</Text>
         <Text style={styles.title}>Expo app ready for Android and Web</Text>
         <Text style={styles.body}>
-          Foundation setup is in place. Next tickets can build auth, tabs, and data
-          layers on top of this shell.
+          Foundation setup is in place. Next tickets can build auth, tabs, and
+          data layers on top of this shell.
         </Text>
       </View>
       <StatusBar style="dark" />

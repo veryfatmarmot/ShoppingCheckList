@@ -25,8 +25,12 @@ npm.cmd test
 # Run a single test file
 npx vitest run packages/domain/src/validation.test.ts
 
-# Lint (delegates to each workspace's own lint script, if present)
+# Lint (ESLint flat config at repo root: typescript-eslint + react-hooks)
 npm.cmd run lint
+
+# Format / check formatting (Prettier; line endings are LF via .gitattributes)
+npm.cmd run format
+npm.cmd run format:check
 
 # Run the app
 npm.cmd run mobile:web       # Expo web
@@ -38,7 +42,9 @@ npm.cmd run firebase:rules
 npm.cmd run firebase:indexes
 ```
 
-On PowerShell, if `npm` is blocked by execution policy, use `npm.cmd` (see `setup.md`). First-time machine setup (Android SDK, JDK, `.env` values, Firebase project link, dev-build SHA-1) is documented in `setup.md` — consult it before assuming a local env problem is a code problem.
+On PowerShell, if `npm` is blocked by execution policy, use `npm.cmd` (see `setup.md`). First-time machine setup (`.env` values, Firebase project link, Expo Go on a device) is documented in `setup.md` — consult it before assuming a local env problem is a code problem.
+
+The `expo` package is pinned to SDK 54 because the app runs in Expo Go, and the Play Store Expo Go build supports exactly one SDK version (54). Do not bump it until Expo Go ships a newer SDK or the project moves to a dev-client build (post-MVP ticket P1-T1).
 
 There is no root `vitest.config`; Vitest runs against the workspace using its default test discovery (`*.test.ts` next to source).
 

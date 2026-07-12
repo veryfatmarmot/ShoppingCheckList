@@ -25,7 +25,10 @@ export function getFirebaseOptions(): FirebaseOptions {
     apiKey: requireConfigValue('apiKey', requiredConfig.apiKey),
     authDomain: requireConfigValue('authDomain', requiredConfig.authDomain),
     projectId: requireConfigValue('projectId', requiredConfig.projectId),
-    storageBucket: requireConfigValue('storageBucket', requiredConfig.storageBucket),
+    storageBucket: requireConfigValue(
+      'storageBucket',
+      requiredConfig.storageBucket,
+    ),
     messagingSenderId: requireConfigValue(
       'messagingSenderId',
       requiredConfig.messagingSenderId,

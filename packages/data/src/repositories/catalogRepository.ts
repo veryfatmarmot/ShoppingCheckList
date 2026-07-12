@@ -6,6 +6,8 @@ import type {
   RepositoryUserId,
 } from './types';
 
+// No delete method: CatalogItem is soft-deleted only (deleted = true written
+// via set), and Firestore security rules reject hard deletes on catalogItems.
 export interface CatalogRepository {
   getAll(userId: RepositoryUserId): Promise<CatalogItem[]>;
   subscribe(
@@ -13,5 +15,4 @@ export interface CatalogRepository {
     onChange: RepositorySubscription<CatalogItem>,
   ): RepositoryUnsubscribe;
   set(userId: RepositoryUserId, item: CatalogItem): Promise<void>;
-  delete(userId: RepositoryUserId, itemId: string): Promise<void>;
 }

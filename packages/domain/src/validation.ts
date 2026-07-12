@@ -95,7 +95,10 @@ export function validateListItem(listItem: ListItem): string[] {
     errors.push('id must be a non-empty string');
   }
 
-  if (listItem.catalogItemId !== null && typeof listItem.catalogItemId !== 'string') {
+  if (
+    listItem.catalogItemId !== null &&
+    typeof listItem.catalogItemId !== 'string'
+  ) {
     errors.push('catalogItemId must be a string or null');
   }
 

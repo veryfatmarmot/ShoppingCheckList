@@ -1,0 +1,8 @@
+# Build outputs and generated files
+apps/mobile/android/
+apps/mobile/dist/
+apps/mobile/.expo/
+package-lock.json
+
+# Specs and docs are hand-formatted
+*.md
