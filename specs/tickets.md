@@ -229,8 +229,9 @@ Not part of MVP scope. Do not start until M0–M6 are complete and the MVP is ot
 
 ## P1-T1 Native Firestore/Auth SDK Migration (Mobile)
 - Replace `packages/data`'s mobile implementation with `@react-native-firebase/firestore` + `@react-native-firebase/auth`
-- Keep Expo Web on the current `firebase` JS SDK
-- Requires a custom Expo dev-client build (native modules, not available in Expo Go)
+- Replace Google Sign-In on mobile with `@react-native-google-signin/google-signin` (native account picker), replacing the Expo Auth Session browser-redirect flow used for MVP
+- Keep Expo Web on the current `firebase` JS SDK + Expo Auth Session (both continue to work fine on web)
+- Requires a custom Expo dev-client build (native modules, not available in Expo Go) — this is the point where the project moves off Expo Go
 - Resolves the known offline-persistence gap documented in `sync-rules.md` ("Known MVP Limitation — Mobile Offline Persistence")
 - Project is not considered production-ready until this ticket is complete
 
