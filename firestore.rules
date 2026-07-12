@@ -108,7 +108,9 @@ service cloud.firestore {
       allow read, write: if false;
 
       match /catalogItems/{catalogItemId} {
-        allow read, delete: if isOwner(userId);
+        // CatalogItem is soft-deleted only (deleted = true via update) so that
+        // delete-vs-edit races stay arbitrable by updatedAt (LWW). No hard delete.
+        allow read: if isOwner(userId);
         allow create: if isOwner(userId) && isValidCatalogItem(catalogItemId);
         allow update: if isOwner(userId) && isValidCatalogItem(catalogItemId) && isValidUpdateTimestamps();
       }

@@ -176,6 +176,7 @@ If a write uses an existing ID:
   deleted = true
   updatedAt = now
   ```
+- Hard delete is not permitted — enforced by Firestore security rules. A `catalogItems` document can only be created or updated, never deleted, so a delete-vs-edit race always stays arbitrable by `updatedAt`.
 
 ### ListItem
 - Hard delete (document removed)
