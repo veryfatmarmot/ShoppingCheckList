@@ -223,6 +223,19 @@ Each ticket must be:
 
 ---
 
+# Post-MVP — Hardening
+
+Not part of MVP scope. Do not start until M0–M6 are complete and the MVP is otherwise feature-complete.
+
+## P1-T1 Native Firestore/Auth SDK Migration (Mobile)
+- Replace `packages/data`'s mobile implementation with `@react-native-firebase/firestore` + `@react-native-firebase/auth`
+- Keep Expo Web on the current `firebase` JS SDK
+- Requires a custom Expo dev-client build (native modules, not available in Expo Go)
+- Resolves the known offline-persistence gap documented in `sync-rules.md` ("Known MVP Limitation — Mobile Offline Persistence")
+- Project is not considered production-ready until this ticket is complete
+
+---
+
 # Important Rules
 
 - Never skip tickets

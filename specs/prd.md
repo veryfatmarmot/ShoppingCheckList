@@ -239,6 +239,11 @@ Enable fast, frictionless shared shopping with:
 - Simpler implementation
 - Less efficient than partial updates
 
+## Mobile offline persistence (MVP)
+- MVP uses a single Firestore JS SDK across web and mobile; on Android/iOS this has no disk-backed offline cache (see `sync-rules.md` → "Known MVP Limitation — Mobile Offline Persistence")
+- An offline edit that hasn't synced before the app is backgrounded can be silently lost — not just in rare "killed while offline" scenarios, but on ordinary backgrounding
+- Explicitly accepted for MVP; must be resolved (native Firestore SDK on mobile) before the project is considered production-ready
+
 ---
 
 # Success Criteria (MVP)
@@ -247,8 +252,10 @@ Enable fast, frictionless shared shopping with:
   - add items quickly
   - shop simultaneously on multiple devices
   - see near real-time updates
-  - use app offline without data loss
+  - use app offline without data loss*
 
 - No data corruption under concurrent usage
 
 - UX remains simple and predictable
+
+\* MVP exception: on Android/iOS, an offline edit not yet synced can be lost if the app is backgrounded long enough for the OS to freeze/kill it. See "Mobile offline persistence (MVP)" above. Must be resolved before production.
