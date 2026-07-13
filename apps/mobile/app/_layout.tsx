@@ -1,4 +1,7 @@
+import 'react-native-gesture-handler';
+
 import { Stack } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { LoadingScreen } from '../components/LoadingScreen';
 import { useAuthState } from '../hooks/useAuthState';
@@ -10,21 +13,26 @@ import { useAuthState } from '../hooks/useAuthState';
 //     back to `/`.
 //   - signed in: `index` becomes unavailable, so `/` redirects into the tabs.
 // While auth is still initializing, the loading screen (M1-T5) is shown first.
+//
+// GestureHandlerRootView wraps everything so react-native-gesture-handler (used
+// by the draggable groups list, M2-T4) has its required root on every screen.
 export default function RootLayout() {
   const { user, initializing } = useAuthState();
 
-  if (initializing) {
-    return <LoadingScreen />;
-  }
-
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={user !== null}>
-        <Stack.Screen name="(tabs)" />
-      </Stack.Protected>
-      <Stack.Protected guard={user === null}>
-        <Stack.Screen name="index" />
-      </Stack.Protected>
-    </Stack>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      {initializing ? (
+        <LoadingScreen />
+      ) : (
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Protected guard={user !== null}>
+            <Stack.Screen name="(tabs)" />
+          </Stack.Protected>
+          <Stack.Protected guard={user === null}>
+            <Stack.Screen name="index" />
+          </Stack.Protected>
+        </Stack>
+      )}
+    </GestureHandlerRootView>
   );
 }

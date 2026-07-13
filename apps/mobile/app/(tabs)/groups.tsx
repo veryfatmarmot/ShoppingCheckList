@@ -5,25 +5,63 @@ import {
   type Group,
 } from '@shopping-check-list/domain';
 import { randomUUID } from 'expo-crypto';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import ReorderableList, {
+  reorderItems,
+  useReorderableDrag,
+  type ReorderableListReorderEvent,
+} from 'react-native-reorderable-list';
 
 import { GroupFormModal } from '../../components/GroupFormModal';
 import { useAuthState } from '../../hooks/useAuthState';
 import { useGroups } from '../../hooks/useGroups';
 
+function GroupRow({
+  group,
+  onEdit,
+}: {
+  group: Group;
+  onEdit: (group: Group) => void;
+}) {
+  const drag = useReorderableDrag();
+
+  return (
+    <View style={styles.row}>
+      <Pressable style={styles.rowMain} onPress={() => onEdit(group)}>
+        <Text style={styles.rowName}>{group.name}</Text>
+      </Pressable>
+      {/* Grab handle: starts dragging on touch-down (no hold). Tapping the
+          rest of the row opens the edit modal instead. */}
+      <Pressable
+        style={styles.handle}
+        onPressIn={drag}
+        accessibilityLabel={`Reorder ${group.name}`}
+      >
+        <Text style={styles.handleGlyph}>⣿</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 export default function GroupsScreen() {
   const { user } = useAuthState();
   const { groups, loading } = useGroups();
+  const [ordered, setOrdered] = useState<Group[]>(groups);
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<Group | null>(null);
+
+  // Mirror the live, sorted groups locally so a drag can update positions
+  // immediately; Firestore's push (after we persist) reconciles this back.
+  useEffect(() => {
+    setOrdered(groups);
+  }, [groups]);
 
   function openCreate() {
     setEditing(null);
@@ -42,8 +80,6 @@ export default function GroupsScreen() {
 
     const now = Date.now();
     const normalizedName = normalizeName(name);
-    // Edit preserves id/createdAt/order and only changes the name; create
-    // assigns a new GUID, timestamps, and the next order.
     const group: Group = editing
       ? { ...editing, name, normalizedName, updatedAt: now }
       : {
@@ -59,6 +95,27 @@ export default function GroupsScreen() {
     await groupRepository.set(user.userId, group);
   }
 
+  function handleReorder({ from, to }: ReorderableListReorderEvent) {
+    if (!user || from === to) {
+      return;
+    }
+
+    const next = reorderItems(ordered, from, to);
+    setOrdered(next);
+
+    // Reindex to 0..n-1 and persist only the groups whose order changed.
+    const now = Date.now();
+    next.forEach((group, index) => {
+      if (group.order !== index) {
+        void groupRepository.set(user.userId, {
+          ...group,
+          order: index,
+          updatedAt: now,
+        });
+      }
+    });
+  }
+
   return (
     <View style={styles.container}>
       <Pressable style={styles.addButton} onPress={openCreate}>
@@ -69,21 +126,18 @@ export default function GroupsScreen() {
         <View style={styles.centered}>
           <ActivityIndicator color="#8a5a14" />
         </View>
-      ) : groups.length === 0 ? (
+      ) : ordered.length === 0 ? (
         <View style={styles.centered}>
           <Text style={styles.empty}>No groups yet.</Text>
         </View>
       ) : (
-        <FlatList
+        <ReorderableList
           style={styles.list}
           contentContainerStyle={styles.listContent}
-          data={groups}
+          data={ordered}
+          onReorder={handleReorder}
           keyExtractor={(group) => group.id}
-          renderItem={({ item }) => (
-            <Pressable style={styles.row} onPress={() => openEdit(item)}>
-              <Text style={styles.rowName}>{item.name}</Text>
-            </Pressable>
-          )}
+          renderItem={({ item }) => <GroupRow group={item} onEdit={openEdit} />}
         />
       )}
 
@@ -134,15 +188,33 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   row: {
-    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'stretch',
     borderRadius: 12,
     backgroundColor: '#fffdf8',
     borderWidth: 1,
     borderColor: '#d8cdbb',
+    overflow: 'hidden',
+  },
+  rowMain: {
+    flex: 1,
+    padding: 16,
+    justifyContent: 'center',
   },
   rowName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#1f1b16',
+  },
+  handle: {
+    paddingHorizontal: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderLeftWidth: 1,
+    borderLeftColor: '#ece3d3',
+  },
+  handleGlyph: {
+    fontSize: 22,
+    color: '#b3a892',
   },
 });
