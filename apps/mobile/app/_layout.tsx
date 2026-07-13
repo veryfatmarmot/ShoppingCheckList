@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
+import { LoadingScreen } from '../components/LoadingScreen';
 import { useAuthState } from '../hooks/useAuthState';
 
 // M1-T4 auth guard. Stack.Protected makes a route group available only when
@@ -9,17 +9,12 @@ import { useAuthState } from '../hooks/useAuthState';
 //   - signed out: only `index` (login) is reachable; `/shopping` etc. redirect
 //     back to `/`.
 //   - signed in: `index` becomes unavailable, so `/` redirects into the tabs.
-// The `initializing` spinner is a placeholder; M1-T5 replaces it with a proper
-// loading screen.
+// While auth is still initializing, the loading screen (M1-T5) is shown first.
 export default function RootLayout() {
   const { user, initializing } = useAuthState();
 
   if (initializing) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -33,12 +28,3 @@ export default function RootLayout() {
     </Stack>
   );
 }
-
-const styles = StyleSheet.create({
-  loading: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f4efe6',
-  },
-});
