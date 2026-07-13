@@ -1,4 +1,9 @@
-export { firebaseAuth, signInWithGoogleIdToken, signOutUser } from './auth';
+export {
+  firebaseAuth,
+  signInWithGoogleIdToken,
+  signOutUser,
+  subscribeToAuthUser,
+} from './auth';
 export type { AuthUser } from './auth';
 export { getFirebaseOptions } from './firebaseConfig';
 export { firebaseApp } from './firebaseApp';

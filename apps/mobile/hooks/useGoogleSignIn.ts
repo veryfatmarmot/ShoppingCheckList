@@ -1,7 +1,6 @@
 import {
   signInWithGoogleIdToken,
   signOutUser,
-  type AuthUser,
 } from '@shopping-check-list/data';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
@@ -12,7 +11,6 @@ import { Platform } from 'react-native';
 WebBrowser.maybeCompleteAuthSession();
 
 export interface GoogleSignInState {
-  user: AuthUser | null;
   error: string | null;
   inProgress: boolean;
   canSignIn: boolean;
@@ -20,8 +18,11 @@ export interface GoogleSignInState {
   signOut: () => Promise<void>;
 }
 
+// Triggers the Google OAuth flow and exchanges the result for a Firebase
+// session. Does not track the signed-in user itself — useAuthState's
+// onAuthStateChanged subscription is the single source of truth for that,
+// and it observes the sign-in performed here automatically.
 export function useGoogleSignIn(): GoogleSignInState {
-  const [user, setUser] = useState<AuthUser | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [exchanging, setExchanging] = useState(false);
 
@@ -53,7 +54,6 @@ export function useGoogleSignIn(): GoogleSignInState {
       setExchanging(true);
       setError(null);
       signInWithGoogleIdToken(idToken)
-        .then(setUser)
         .catch((cause: unknown) => {
           setError(
             cause instanceof Error ? cause.message : 'Firebase sign-in failed',
@@ -73,17 +73,11 @@ export function useGoogleSignIn(): GoogleSignInState {
     void promptAsync();
   }, [promptAsync]);
 
-  const signOut = useCallback(async () => {
-    await signOutUser();
-    setUser(null);
-  }, []);
-
   return {
-    user,
     error,
     inProgress: exchanging,
     canSignIn: request !== null && !exchanging,
     signIn,
-    signOut,
+    signOut: signOutUser,
   };
 }

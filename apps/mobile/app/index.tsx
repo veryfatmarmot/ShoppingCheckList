@@ -7,20 +7,24 @@ import {
   View,
 } from 'react-native';
 
+import { useAuthState } from '../hooks/useAuthState';
 import { useGoogleSignIn } from '../hooks/useGoogleSignIn';
 
-// Temporary home screen for M1-T1: exercises Google sign-in end to end.
-// M1-T3 (app shell) and M1-T4 (auth guard) will replace this with the real
-// login screen + tab navigation.
+// Temporary home screen for M1-T1/M1-T2: exercises Google sign-in and auth
+// state persistence end to end. M1-T3 (app shell) and M1-T4 (auth guard)
+// will replace this with the real login screen + tab navigation; M1-T5 will
+// replace the inline spinner below with a proper loading screen.
 export default function HomeScreen() {
-  const { user, error, inProgress, canSignIn, signIn, signOut } =
-    useGoogleSignIn();
+  const { user, initializing } = useAuthState();
+  const { error, inProgress, canSignIn, signIn, signOut } = useGoogleSignIn();
 
   return (
     <View style={styles.screen}>
       <View style={styles.card}>
         <Text style={styles.eyebrow}>Shopping Check List</Text>
-        {user ? (
+        {initializing ? (
+          <ActivityIndicator />
+        ) : user ? (
           <>
             <Text style={styles.title}>Signed in</Text>
             <Text style={styles.body}>
