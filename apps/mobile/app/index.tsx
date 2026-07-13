@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import {
   ActivityIndicator,
@@ -15,6 +16,7 @@ import { useGoogleSignIn } from '../hooks/useGoogleSignIn';
 // will replace this with the real login screen + tab navigation; M1-T5 will
 // replace the inline spinner below with a proper loading screen.
 export default function HomeScreen() {
+  const router = useRouter();
   const { user, initializing } = useAuthState();
   const { error, inProgress, canSignIn, signIn, signOut } = useGoogleSignIn();
 
@@ -31,7 +33,18 @@ export default function HomeScreen() {
               {user.displayName ?? 'No name'} ({user.email ?? 'no email'})
             </Text>
             <Text style={styles.body}>userId: {user.userId}</Text>
-            <Pressable style={styles.button} onPress={() => void signOut()}>
+            {/* M1-T3: manual entry into the tab shell. M1-T4 replaces this
+                with an automatic auth-guard redirect. */}
+            <Pressable
+              style={styles.button}
+              onPress={() => router.push('/shopping')}
+            >
+              <Text style={styles.buttonLabel}>Open app</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.button, styles.buttonSecondary]}
+              onPress={() => void signOut()}
+            >
               <Text style={styles.buttonLabel}>Sign out</Text>
             </Pressable>
           </>
@@ -104,6 +117,9 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.5,
+  },
+  buttonSecondary: {
+    backgroundColor: '#6b6153',
   },
   buttonLabel: {
     fontSize: 16,
