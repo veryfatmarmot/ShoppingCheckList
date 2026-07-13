@@ -14,3 +14,7 @@ export {
   FirestoreCatalogRepository,
   catalogRepository,
 } from './firestoreCatalogRepository';
+export {
+  FirestoreListRepository,
+  listRepository,
+} from './firestoreListRepository';

@@ -18,3 +18,4 @@ export type {
 } from './repositories';
 export { FirestoreGroupRepository, groupRepository } from './repositories';
 export { FirestoreCatalogRepository, catalogRepository } from './repositories';
+export { FirestoreListRepository, listRepository } from './repositories';

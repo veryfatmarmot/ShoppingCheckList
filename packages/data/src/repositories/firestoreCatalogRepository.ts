@@ -12,6 +12,7 @@ import {
 import { firestoreDb } from '../firestore';
 
 import type { CatalogRepository } from './catalogRepository';
+import { itemDataFromRaw } from './itemDataMapper';
 import type {
   RepositorySubscription,
   RepositoryUnsubscribe,
@@ -35,18 +36,12 @@ const catalogItemConverter: FirestoreDataConverter<CatalogItem> = {
   },
   fromFirestore(snapshot, options) {
     const data = snapshot.data(options);
-    const itemData = data.itemData;
     return {
       id: snapshot.id,
       createdAt: data.createdAt as number,
       updatedAt: data.updatedAt as number,
       deleted: data.deleted as boolean,
-      itemData: {
-        name: itemData.name as string,
-        normalizedName: itemData.normalizedName as string,
-        groupId: (itemData.groupId ?? null) as string | null,
-        note: itemData.note as string,
-      },
+      itemData: itemDataFromRaw(data.itemData),
     };
   },
 };
