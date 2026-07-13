@@ -155,7 +155,7 @@ Each ticket must be:
 - set deleted = true
 
 ## M3-T7 Disable Add If Active
-- prevent adding item already in list
+- Deferred to M4-T10. This guards the catalog row's "add to list" button (built in M4-T3) against a ListItem that already references the same `catalogItemId` — neither the button nor ListItems exist until M4, so it cannot be implemented at M3.
 
 ---
 
@@ -190,6 +190,10 @@ Each ticket must be:
 ## M4-T9 Group Delete Cascade
 - Before deleting a group, overwrite every referencing CatalogItem and ListItem with `itemData.groupId = null` and a newer `updatedAt`, then hard-delete the group
 - Completes the deferral noted in M2-T5; required by `domain-model.md` → Group → Delete
+
+## M4-T10 Disable Add If Active (deferred from M3-T7)
+- On the Catalog screen, disable a row's "add to list" button when a ListItem already exists with that item's `catalogItemId` (ux-flows: `already in list`)
+- Depends on M4-T3 (the add-to-list button) and the list subscription; that's why it moved out of M3
 
 ---
 
