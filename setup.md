@@ -123,6 +123,14 @@ Since M1-T1 the Android app runs as a custom Expo dev-client build (not Expo Go)
 
     Day-to-day after the app is installed: just run `npm.cmd run mobile:start` and open the installed ShoppingCheckList app — it connects to Metro with hot reload like Expo Go did. Rebuild only when native dependencies or `app.json` native config change.
 
+    Connecting the device to Metro: with the phone on USB, prefer an adb reverse tunnel over the LAN IP — the PC's Wi-Fi address changes with DHCP, but the tunnel does not:
+
+    ```powershell
+    adb reverse tcp:8081 tcp:8081
+    ```
+
+    Then in the dev-client launcher tap **Connect** on `http://localhost:8081`. (Re-run the command after replugging the device or restarting adb.)
+
     The `expo` package stays pinned to SDK 54; upgrading is possible with the dev client (it is not tied to Expo Go's supported SDK version) but must be a deliberate, separate change.
 
 14. Verify the repo state:
