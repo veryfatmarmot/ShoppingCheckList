@@ -19,6 +19,7 @@ import {
   CatalogItemFormModal,
   type CatalogItemFormValues,
 } from '../../components/CatalogItemFormModal';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useAuthState } from '../../hooks/useAuthState';
 import { useCatalog } from '../../hooks/useCatalog';
 import { useGroups } from '../../hooks/useGroups';
@@ -46,6 +47,7 @@ export default function CatalogScreen() {
   const { groups, loading: groupsLoading } = useGroups();
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<CatalogItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<CatalogItem | null>(null);
 
   const sections = useMemo(
     () =>
@@ -92,6 +94,27 @@ export default function CatalogScreen() {
     await catalogRepository.set(user.userId, item);
   }
 
+  function requestDelete() {
+    setDeleteTarget(editing);
+    setModalVisible(false);
+  }
+
+  async function confirmDelete() {
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    if (!user || !target) {
+      return;
+    }
+    // Soft delete: write a tombstone (deleted = true) rather than removing the
+    // document. useCatalog filters it out of the view; the tombstone keeps the
+    // delete arbitrable by updatedAt and allows later resurrection.
+    await catalogRepository.set(user.userId, {
+      ...target,
+      deleted: true,
+      updatedAt: Date.now(),
+    });
+  }
+
   return (
     <View style={styles.container}>
       <Pressable style={styles.addButton} onPress={openCreate}>
@@ -133,6 +156,17 @@ export default function CatalogScreen() {
         editingId={editing?.id}
         onCancel={() => setModalVisible(false)}
         onSubmit={handleSubmit}
+        onDelete={editing ? requestDelete : undefined}
+      />
+
+      <ConfirmDialog
+        visible={deleteTarget !== null}
+        title="Delete item?"
+        message={`"${deleteTarget?.itemData.name ?? ''}" will be removed from your catalog.`}
+        confirmLabel="Delete"
+        destructive
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
       />
     </View>
   );
