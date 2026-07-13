@@ -82,6 +82,7 @@ Each ticket must be:
 ## M1-T2 Auth State
 - Detect signed-in user
 - Store userId
+- Persist auth across app restarts: on Android/iOS initialize Firebase Auth with AsyncStorage persistence (`initializeAuth` + `@react-native-async-storage/async-storage` — approved MVP dependency); the JS SDK is memory-only on React Native by default. Web persists automatically (IndexedDB).
 
 ## M1-T3 App Shell
 - Add tab navigation:
@@ -95,6 +96,10 @@ Each ticket must be:
 
 ## M1-T5 Loading State
 - Add loading screen during auth/bootstrap
+
+## M1-T6 Sign Out
+- Sign-out action in the shared header of the main app (visible from all tabs)
+- Confirmation dialog, then Firebase sign-out and return to the Login screen
 
 ---
 
@@ -114,7 +119,8 @@ Each ticket must be:
 - Update order
 
 ## M2-T5 Delete Group
-- Remove group document
+- Remove group document (with Delete Confirmation modal)
+- Note: the reference-clearing cascade (`itemData.groupId = null` on referencing catalog/list items) is deferred to M4-T9 — the catalog and list repositories do not exist yet at M2
 
 ## M2-T6 Ungrouped Resolver
 - If group missing → treat as Ungrouped
@@ -177,6 +183,10 @@ Each ticket must be:
 ## M4-T8 Empty State
 - Show "Shopping Complete"
 
+## M4-T9 Group Delete Cascade
+- Before deleting a group, overwrite every referencing CatalogItem and ListItem with `itemData.groupId = null` and a newer `updatedAt`, then hard-delete the group
+- Completes the deferral noted in M2-T5; required by `domain-model.md` → Group → Delete
+
 ---
 
 # M5 — Sync & Offline
@@ -191,7 +201,8 @@ Each ticket must be:
 - Store last 10 deletions locally (N = 10)
 
 ## M5-T4 Undo Action
-- Recreate ListItem
+- Recreate ListItem (new ID)
+- Triggered from the "Bought — Undo" snackbar shown after marking an item bought (see `ux-flows.md` → Undo)
 
 ## M5-T5 Conflict Handling
 - Apply last-write-wins
@@ -222,6 +233,24 @@ Each ticket must be:
 
 ## M6-T6 Backlog Prep
 - Prepare next phase features
+
+---
+
+# R1 — Use It For Real
+
+Ships the finished MVP onto the household's devices. Runs after M6. Independent of (and typically before) the Post-MVP hardening below.
+
+## R1-T1 Release Android Build
+- Signed release APK with the JS bundle embedded — the app must run without a Metro dev server
+- Create a release keystore, store it safely (it is not the shared debug keystore), and register its SHA-1 with the Google Android OAuth client
+- Install on all household devices
+
+## R1-T2 Web Hosting
+- Expo web export deployed to Firebase Hosting
+- Add the hosting origin to the Web OAuth client's authorized JavaScript origins and redirect URIs
+
+## R1-T3 Branding
+- Home-screen display name "Refillio" (public product name), proper icon and splash
 
 ---
 

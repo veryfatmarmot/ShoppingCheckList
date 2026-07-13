@@ -77,6 +77,7 @@ Use:
 ## Auth implementation
 - Google login uses Expo Auth Session + Firebase credential exchange
 - On Android this requires the dev-client build (see "App runtime"); on web it works directly
+- Mobile auth persistence (M1-T2): `initializeAuth` with `@react-native-async-storage/async-storage` — the JS SDK has no disk persistence for auth on React Native by default. This dependency is approved for the MVP. Web persists via IndexedDB automatically.
 
 ## Testing
 - Vitest for domain-focused tests

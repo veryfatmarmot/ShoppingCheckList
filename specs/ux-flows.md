@@ -51,6 +51,10 @@ It must align with:
 - Catalog
 - Groups
 
+## Header (shared, all tabs)
+- Sign-out icon button
+- Tapping shows a confirmation dialog; on confirm: Firebase sign-out, return to Login Screen
+
 ---
 
 # Screen: Shopping List
@@ -83,6 +87,7 @@ It must align with:
 ### Mark as bought
 - deletes ListItem
 - triggers local undo buffer
+- shows a transient snackbar: "Bought — Undo" (~5 s); tapping Undo recreates the item from the buffer (new ID)
 
 ### Empty state
 - show "Shopping Complete"
@@ -262,6 +267,7 @@ It must align with:
 ## Undo
 - local only
 - recreates deleted items with a new ID
+- surfaced via the "Bought — Undo" snackbar after marking bought (buffer keeps last 10 deletions)
 
 ---
 
