@@ -12,9 +12,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.marmot.shoppingchecklist"
     },
     "android": {
+      "package": "dev.marmot.shoppingchecklist",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -27,7 +29,7 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-router"],
-    "scheme": "shoppingchecklist"
+    "plugins": ["expo-router", "expo-web-browser"],
+    "scheme": ["shoppingchecklist", "dev.marmot.shoppingchecklist"]
   }
 }

@@ -76,6 +76,8 @@ Each ticket must be:
 
 ## M1-T1 Google Sign-In
 - Implement Firebase Google auth
+- Expo Auth Session obtains the Google ID token; `packages/data` exchanges it for a Firebase credential
+- Includes moving the Android app from Expo Go to a local dev-client build (`expo-dev-client` + `expo run:android`) — Google OAuth cannot complete inside Expo Go (no auth proxy, `exp://` redirect rejected)
 
 ## M1-T2 Auth State
 - Detect signed-in user
@@ -231,7 +233,7 @@ Not part of MVP scope. Do not start until M0–M6 are complete and the MVP is ot
 - Replace `packages/data`'s mobile implementation with `@react-native-firebase/firestore` + `@react-native-firebase/auth`
 - Replace Google Sign-In on mobile with `@react-native-google-signin/google-signin` (native account picker), replacing the Expo Auth Session browser-redirect flow used for MVP
 - Keep Expo Web on the current `firebase` JS SDK + Expo Auth Session (both continue to work fine on web)
-- Requires a custom Expo dev-client build (native modules, not available in Expo Go) — this is the point where the project moves off Expo Go
+- The project already runs as a custom dev-client build (moved off Expo Go at M1-T1), so this is a dependency/implementation swap with no new build infrastructure
 - Resolves the known offline-persistence gap documented in `sync-rules.md` ("Known MVP Limitation — Mobile Offline Persistence")
 - Project is not considered production-ready until this ticket is complete
 

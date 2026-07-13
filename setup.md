@@ -2,17 +2,17 @@
 
 Use this checklist when you clone the repo on a new PC and do not yet have the required local software or git-ignored local files.
 
-The MVP runs in Expo Go (Android) and Expo Web. No JDK, Android SDK, or native build tooling is required for that — those only become necessary for the optional Android emulator, or later for the post-MVP dev-client build (see `specs/tickets.md` → P1-T1).
+Since M1-T1 the Android app runs as a custom Expo dev-client build (not Expo Go), because Google OAuth cannot complete inside Expo Go. Building it locally requires the Android SDK and a JDK. Expo Web needs neither.
 
 1. Install required software:
 
    - Git
    - Node.js LTS
+   - Android Studio with Android SDK and Platform-Tools (the bundled JetBrains JDK 21 at `C:\Program Files\Android\Android Studio\jbr` is used as `JAVA_HOME` — no separate JDK install needed)
 
-   Optional (only if you want to run the app in an Android emulator instead of a physical device):
+   Optional:
 
-   - Android Studio with Android SDK, Platform-Tools, and Android Emulator
-   - Note: the emulator needs hardware virtualization (Hyper-V/WHPX or the AEHD driver) to install correctly; on some machines this fails and a physical device is the simpler path.
+   - Android Emulator (needs hardware virtualization; on some machines the driver fails to install and a physical device over USB is the simpler path)
 
 2. On Windows, fix PowerShell `npm` blocking if needed:
 
@@ -22,14 +22,20 @@ The MVP runs in Expo Go (Android) and Expo Web. No JDK, Android SDK, or native b
 
    If you do not want to change this, use `npm.cmd` instead of `npm`.
 
-3. Clone the repo and enter it:
+3. Set environment variables (User scope):
+
+   - `JAVA_HOME` = `C:\Program Files\Android\Android Studio\jbr`
+   - `ANDROID_HOME` = `%LOCALAPPDATA%\Android\Sdk`
+   - add `%ANDROID_HOME%\platform-tools` to `Path`
+
+4. Clone the repo and enter it:
 
    ```powershell
    git clone <repo-url>
    cd ShoppingCheckList
    ```
 
-4. Install project dependencies:
+5. Install project dependencies:
 
    ```powershell
    npm.cmd install
@@ -43,13 +49,13 @@ The MVP runs in Expo Go (Android) and Expo Web. No JDK, Android SDK, or native b
    npm.cmd approve-scripts "protobufjs"
    ```
 
-5. Create the local env file that Expo reads (Expo only loads `.env` from the app directory, not the repo root):
+6. Create the local env file that Expo reads (Expo only loads `.env` from the app directory, not the repo root):
 
    ```powershell
    Copy-Item .env.example apps\mobile\.env
    ```
 
-6. Fill `apps/mobile/.env` with the required values:
+7. Fill `apps/mobile/.env` with the required values:
 
    - `EXPO_PUBLIC_FIREBASE_API_KEY`
    - `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN`
@@ -62,53 +68,64 @@ The MVP runs in Expo Go (Android) and Expo Web. No JDK, Android SDK, or native b
    - `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID`
    - `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`
 
-7. Make sure the Firebase project already exists and has:
+8. Make sure the Firebase project already exists and has:
 
    - a Web app registered
    - Google Authentication enabled
    - a Firestore database created
-   - Google OAuth client IDs created for Web and Android
+   - Google OAuth client IDs created for Web and Android:
+     - Web client: `http://localhost:8081` in Authorized JavaScript origins and redirect URIs (for Expo Web sign-in)
+     - Android client: package `dev.marmot.shoppingchecklist` with the debug keystore SHA-1. Note: Expo's generated `android/app/debug.keystore` is the standard React Native debug keystore, identical on every machine (SHA-1 `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25`), so this registration does not need updating when switching PCs.
 
-8. Log in to Firebase CLI (run in your own terminal — it opens a browser):
+9. Log in to Firebase CLI (run in your own terminal — it opens a browser):
 
    ```powershell
    npx firebase-tools@latest login
    ```
 
-9. Link the repo to the Firebase project:
+10. Link the repo to the Firebase project:
 
-   ```powershell
-   npx firebase-tools@latest use --add
-   ```
+    ```powershell
+    npx firebase-tools@latest use --add
+    ```
 
-   Use the existing alias:
+    Use the existing alias:
 
-   - `shoppingchecklist`
+    - `shoppingchecklist`
 
-10. Deploy Firestore config if needed:
+11. Deploy Firestore config if needed:
 
     ```powershell
     npm.cmd run firebase:firestore
     ```
 
-11. Run the web app:
+12. Run the web app:
 
     ```powershell
     npm.cmd run mobile:web
     ```
 
-12. Run the Android app in Expo Go:
+13. Build and run the Android app on a physical device (first time on a new PC or after native config/dependency changes):
 
-    - Install Expo Go on the phone and put it on the same Wi-Fi network as this PC.
-    - Start the dev server and scan the QR code (or open the `exp://<pc-ip>:8081` URL) in Expo Go:
+    - On the phone: enable Developer options (tap Build number 7 times), turn on USB debugging, connect via USB, accept the "Allow USB debugging" prompt.
+    - The native `android/` directory is git-ignored and generated. Create or refresh it with:
 
-    ```powershell
-    npm.cmd run mobile:android
-    ```
+      ```powershell
+      cd apps\mobile
+      npx expo prebuild --clean --platform android --no-install
+      ```
 
-    Important: the project is pinned to Expo SDK 54 because the Expo Go app from the Play Store supports exactly one SDK version (currently 54). Do not upgrade the `expo` package past SDK 54 until either Expo Go itself ships a newer SDK, or the project has moved to a dev-client build (P1-T1). If Expo Go reports "Project is incompatible with this version of Expo Go", the pin and the installed Expo Go version have drifted apart.
+    - Build, install, and launch (10–20 min the first time):
 
-13. Verify the repo state:
+      ```powershell
+      npm.cmd run mobile:android
+      ```
+
+    Day-to-day after the app is installed: just run `npm.cmd run mobile:start` and open the installed ShoppingCheckList app — it connects to Metro with hot reload like Expo Go did. Rebuild only when native dependencies or `app.json` native config change.
+
+    The `expo` package stays pinned to SDK 54; upgrading is possible with the dev client (it is not tied to Expo Go's supported SDK version) but must be a deliberate, separate change.
+
+14. Verify the repo state:
 
     ```powershell
     cmd /c .\node_modules\.bin\tsc.cmd --noEmit -p packages\domain\tsconfig.json
@@ -119,23 +136,15 @@ The MVP runs in Expo Go (Android) and Expo Web. No JDK, Android SDK, or native b
     npm.cmd run format:check
     ```
 
-14. Before continuing with the next ticket, read:
+15. Before continuing with the next ticket, read:
 
     - `specs/tickets.md`
     - `specs/spec-index.md`
 
-15. After each completed ticket, check whether setup requirements changed. If they did, update this file.
+16. After each completed ticket, check whether setup requirements changed. If they did, update this file.
 
 ---
 
-## Deferred until P1-T1 (post-MVP dev-client build)
+## Deferred until P1-T1 (post-MVP native SDK migration)
 
-These steps are NOT needed while the app runs in Expo Go. They become relevant when the project moves to a custom dev-client build with native Google Sign-In:
-
-- Install JDK 21, set `JAVA_HOME`, `ANDROID_HOME`, and add `%JAVA_HOME%\bin`, `%ANDROID_HOME%\platform-tools`, `%ANDROID_HOME%\emulator` to `Path`.
-- Build and run the Android development build.
-- Get this PC's debug SHA-1 from the debug keystore and register it in the Google Cloud / Firebase Android OAuth setup for package `dev.marmot.shoppingchecklist`:
-
-  ```powershell
-  & "$env:JAVA_HOME\bin\keytool.exe" -list -v -alias androiddebugkey -keystore "apps\mobile\android\app\debug.keystore" -storepass android -keypass android
-  ```
+Nothing extra to install today. P1-T1 swaps the mobile data layer to `@react-native-firebase/firestore` + `@react-native-firebase/auth` and native Google Sign-In; the dev-client build infrastructure it needs already exists (adopted at M1-T1). Expect it to add `google-services.json` handling and possibly release-keystore SHA-1 registration.

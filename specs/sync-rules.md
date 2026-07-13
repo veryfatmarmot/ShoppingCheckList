@@ -46,7 +46,7 @@ This is a BEHAVIORAL contract. It must align with:
 ## Planned resolution (post-MVP)
 - Replace the mobile data-layer implementation in `packages/data` with `@react-native-firebase/firestore` + `@react-native-firebase/auth` (native SDKs with real disk-backed offline persistence and automatic background sync), behind the existing `CatalogRepository` / `ListRepository` / `GroupRepository` interfaces.
 - Web continues using the current `firebase` JS SDK (IndexedDB persistence works fine there).
-- Requires a custom Expo dev-client build (native modules aren't available in Expo Go).
+- The project already runs as a custom Expo dev-client build (adopted at M1-T1 because Google OAuth cannot complete inside Expo Go), so no new build infrastructure is needed — this is only a dependency/implementation swap.
 - Tracked as a post-MVP ticket — see `tickets.md` → Post-MVP — Hardening.
 
 ---

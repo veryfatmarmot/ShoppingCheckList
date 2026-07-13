@@ -66,10 +66,17 @@ Use:
 ## SDK choice (MVP)
 - MVP uses the single `firebase` (web/modular) SDK for Firebase Auth + Firestore across Expo Web and the Android/iOS app.
 - Known limitation: no disk-backed offline persistence on Android/iOS with this SDK — see `sync-rules.md` → "Known MVP Limitation — Mobile Offline Persistence".
-- Planned post-MVP: `@react-native-firebase/auth` + `@react-native-firebase/firestore` for the mobile app only (native modules, requires a dev-client build); web keeps the JS SDK. Not part of the MVP dependency set — do not add these packages until that migration ticket is picked up.
+- Planned post-MVP: `@react-native-firebase/auth` + `@react-native-firebase/firestore` for the mobile app only (native modules); web keeps the JS SDK. Not part of the MVP dependency set — do not add these packages until that migration ticket is picked up.
+
+## App runtime (MVP)
+- The Android app runs as a custom Expo dev-client build (`expo-dev-client`, built locally with `expo run:android`), not Expo Go.
+- Reason: Google OAuth cannot complete inside Expo Go — Expo removed the auth proxy, and Google rejects Expo Go's `exp://` redirect scheme. A dev-client build has the app's own package name and scheme, which Google accepts.
+- Decision history: the original plan was Expo Go until post-MVP; moving off Expo Go was pulled forward to M1-T1 out of the P1-T1 ticket. The rest of P1-T1 (native Firebase SDKs) remains post-MVP.
+- Day-to-day development is unchanged: same Metro dev server, hot reload, and `firebase` JS SDK.
 
 ## Auth implementation
 - Google login uses Expo Auth Session + Firebase credential exchange
+- On Android this requires the dev-client build (see "App runtime"); on web it works directly
 
 ## Testing
 - Vitest for domain-focused tests

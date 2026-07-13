@@ -34,7 +34,7 @@ npm.cmd run format:check
 
 # Run the app
 npm.cmd run mobile:web       # Expo web
-npm.cmd run mobile:android   # Expo Android (Expo Go)
+npm.cmd run mobile:android   # Expo Android (dev-client build on device/emulator)
 
 # Firebase (rarely needed; requires firebase-tools login + project link)
 npm.cmd run firebase:firestore   # deploy rules + indexes
@@ -44,7 +44,7 @@ npm.cmd run firebase:indexes
 
 On PowerShell, if `npm` is blocked by execution policy, use `npm.cmd` (see `setup.md`). First-time machine setup (`.env` values, Firebase project link, Expo Go on a device) is documented in `setup.md` — consult it before assuming a local env problem is a code problem.
 
-The `expo` package is pinned to SDK 54 because the app runs in Expo Go, and the Play Store Expo Go build supports exactly one SDK version (54). Do not bump it until Expo Go ships a newer SDK or the project moves to a dev-client build (post-MVP ticket P1-T1).
+Since M1-T1 the Android app runs as a custom Expo dev-client build (`expo run:android`), not Expo Go — Google OAuth cannot complete inside Expo Go. The `expo` package stays on SDK 54; upgrading it is now possible (the dev client isn't tied to Expo Go's supported SDK) but should be its own deliberate change, not a drive-by.
 
 There is no root `vitest.config`; Vitest runs against the workspace using its default test discovery (`*.test.ts` next to source).
 
