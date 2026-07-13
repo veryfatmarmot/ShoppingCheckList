@@ -129,6 +129,8 @@ export default function CatalogScreen() {
         initialNote={editing?.itemData.note ?? ''}
         initialGroupId={editing?.itemData.groupId ?? null}
         groups={groups}
+        existingItems={items}
+        editingId={editing?.id}
         onCancel={() => setModalVisible(false)}
         onSubmit={handleSubmit}
       />

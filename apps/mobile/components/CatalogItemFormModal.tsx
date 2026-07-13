@@ -1,4 +1,10 @@
-import { validateName, type Group } from '@shopping-check-list/domain';
+import {
+  hasDuplicateCatalogName,
+  normalizeName,
+  validateName,
+  type CatalogItem,
+  type Group,
+} from '@shopping-check-list/domain';
 import { useEffect, useState } from 'react';
 import {
   Modal,
@@ -22,6 +28,10 @@ interface CatalogItemFormModalProps {
   initialNote: string;
   initialGroupId: string | null;
   groups: Group[];
+  // Active catalog items, used for best-effort duplicate-name detection.
+  existingItems: CatalogItem[];
+  // Id of the item being edited, excluded from the duplicate check.
+  editingId?: string;
   onCancel: () => void;
   onSubmit: (values: CatalogItemFormValues) => void;
   // When provided (edit mode), a Delete button is shown (wired in M3-T6).
@@ -38,6 +48,8 @@ export function CatalogItemFormModal({
   initialNote,
   initialGroupId,
   groups,
+  existingItems,
+  editingId,
   onCancel,
   onSubmit,
   onDelete,
@@ -54,10 +66,14 @@ export function CatalogItemFormModal({
     }
   }, [visible, initialName, initialNote, initialGroupId]);
 
-  const error = validateName(name);
+  const nameError = validateName(name);
+  const isDuplicate =
+    nameError === null &&
+    hasDuplicateCatalogName(normalizeName(name), existingItems, editingId);
+  const canSave = nameError === null && !isDuplicate;
 
   function submit() {
-    if (!error) {
+    if (canSave) {
       onSubmit({ name: name.trim(), note: note.trim(), groupId });
     }
   }
@@ -81,6 +97,11 @@ export function CatalogItemFormModal({
             placeholderTextColor="#a89e8c"
             autoFocus
           />
+          {isDuplicate ? (
+            <Text style={styles.error}>
+              An item named “{name.trim()}” already exists.
+            </Text>
+          ) : null}
 
           <TextInput
             style={[styles.input, styles.noteInput]}
@@ -124,9 +145,9 @@ export function CatalogItemFormModal({
                 style={[
                   styles.button,
                   styles.save,
-                  error !== null && styles.saveDisabled,
+                  !canSave && styles.saveDisabled,
                 ]}
-                disabled={error !== null}
+                disabled={!canSave}
                 onPress={submit}
               >
                 <Text style={styles.saveLabel}>Save</Text>
@@ -194,6 +215,11 @@ const styles = StyleSheet.create({
   noteInput: {
     minHeight: 64,
     textAlignVertical: 'top',
+  },
+  error: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#a4262c',
   },
   label: {
     fontSize: 13,
