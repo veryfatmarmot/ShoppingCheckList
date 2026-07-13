@@ -4,6 +4,7 @@ export type { Group } from './group';
 export type { ItemData } from './itemData';
 export type { ListItem } from './listItem';
 export { normalizeName } from './normalizeName';
+export { sortGroups } from './sortGroups';
 export {
   validateCatalogItem,
   validateGroup,
