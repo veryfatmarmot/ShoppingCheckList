@@ -16,3 +16,4 @@ export type {
   RepositoryUnsubscribe,
   RepositoryUserId,
 } from './repositories';
+export { FirestoreGroupRepository, groupRepository } from './repositories';
