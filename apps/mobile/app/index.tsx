@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import {
   ActivityIndicator,
@@ -8,63 +7,31 @@ import {
   View,
 } from 'react-native';
 
-import { useAuthState } from '../hooks/useAuthState';
 import { useGoogleSignIn } from '../hooks/useGoogleSignIn';
 
-// Temporary home screen for M1-T1/M1-T2: exercises Google sign-in and auth
-// state persistence end to end. M1-T3 (app shell) and M1-T4 (auth guard)
-// will replace this with the real login screen + tab navigation; M1-T5 will
-// replace the inline spinner below with a proper loading screen.
-export default function HomeScreen() {
-  const router = useRouter();
-  const { user, initializing } = useAuthState();
-  const { error, inProgress, canSignIn, signIn, signOut } = useGoogleSignIn();
+// Login screen. The root layout's auth guard only routes here while signed
+// out; once sign-in succeeds, onAuthStateChanged flips the guard and the user
+// is redirected into the tabs, so this screen has no signed-in state.
+export default function LoginScreen() {
+  const { error, inProgress, canSignIn, signIn } = useGoogleSignIn();
 
   return (
     <View style={styles.screen}>
       <View style={styles.card}>
         <Text style={styles.eyebrow}>Shopping Check List</Text>
-        {initializing ? (
+        <Text style={styles.title}>Sign in</Text>
+        {inProgress ? (
           <ActivityIndicator />
-        ) : user ? (
-          <>
-            <Text style={styles.title}>Signed in</Text>
-            <Text style={styles.body}>
-              {user.displayName ?? 'No name'} ({user.email ?? 'no email'})
-            </Text>
-            <Text style={styles.body}>userId: {user.userId}</Text>
-            {/* M1-T3: manual entry into the tab shell. M1-T4 replaces this
-                with an automatic auth-guard redirect. */}
-            <Pressable
-              style={styles.button}
-              onPress={() => router.push('/shopping')}
-            >
-              <Text style={styles.buttonLabel}>Open app</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.button, styles.buttonSecondary]}
-              onPress={() => void signOut()}
-            >
-              <Text style={styles.buttonLabel}>Sign out</Text>
-            </Pressable>
-          </>
         ) : (
-          <>
-            <Text style={styles.title}>Sign in</Text>
-            {inProgress ? (
-              <ActivityIndicator />
-            ) : (
-              <Pressable
-                style={[styles.button, !canSignIn && styles.buttonDisabled]}
-                disabled={!canSignIn}
-                onPress={signIn}
-              >
-                <Text style={styles.buttonLabel}>Continue with Google</Text>
-              </Pressable>
-            )}
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-          </>
+          <Pressable
+            style={[styles.button, !canSignIn && styles.buttonDisabled]}
+            disabled={!canSignIn}
+            onPress={signIn}
+          >
+            <Text style={styles.buttonLabel}>Continue with Google</Text>
+          </Pressable>
         )}
+        {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
       <StatusBar style="dark" />
     </View>
@@ -102,11 +69,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1f1b16',
   },
-  body: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#4d463d',
-  },
   button: {
     marginTop: 4,
     paddingVertical: 12,
@@ -117,9 +79,6 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.5,
-  },
-  buttonSecondary: {
-    backgroundColor: '#6b6153',
   },
   buttonLabel: {
     fontSize: 16,
