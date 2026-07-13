@@ -122,8 +122,12 @@ Each ticket must be:
 - Remove group document (with Delete Confirmation modal)
 - Note: the reference-clearing cascade (`itemData.groupId = null` on referencing catalog/list items) is deferred to M4-T9 — the catalog and list repositories do not exist yet at M2
 
-## M2-T6 Ungrouped Resolver
-- If group missing → treat as Ungrouped
+## M2-T6 Group Sectioning Helper (domain, no UI)
+- Pure domain helper in `packages/domain` that buckets items into ordered display sections. Shared by the Catalog grouped view (M3-T3) and the Shopping grouped view (M4-T2). No UI in this ticket — the payoff is a tested helper those screens consume.
+- Input: items carrying `itemData` (generic over CatalogItem / ListItem) plus the list of groups.
+- Output: ordered sections. Named groups first, ordered by `group.order` ascending; each section's items sorted by `itemData.normalizedName`. Items whose `groupId` is null OR does not match an existing group collapse into a single "Ungrouped" section, placed last.
+- Only include sections that contain at least one item (no empty group headers).
+- Tests (prioritized domain area — group fallback + sorting): null `groupId` → Ungrouped; unknown/stale `groupId` → Ungrouped; sections ordered by `group.order`; items ordered by `normalizedName`; empty input → no sections.
 
 ---
 
@@ -137,7 +141,7 @@ Each ticket must be:
 - Load all catalog items
 
 ## M3-T3 Catalog Screen
-- Grouped view
+- Grouped view (uses the M2-T6 sectioning helper)
 - Sorted items
 
 ## M3-T4 Add/Edit Catalog Modal
@@ -161,7 +165,7 @@ Each ticket must be:
 - CRUD operations
 
 ## M4-T2 Shopping Screen
-- Grouped list view
+- Grouped list view (uses the M2-T6 sectioning helper)
 
 ## M4-T3 Add From Catalog
 - Open quantity modal
