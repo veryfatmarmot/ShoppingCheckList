@@ -17,3 +17,4 @@ export type {
   RepositoryUserId,
 } from './repositories';
 export { FirestoreGroupRepository, groupRepository } from './repositories';
+export { FirestoreCatalogRepository, catalogRepository } from './repositories';

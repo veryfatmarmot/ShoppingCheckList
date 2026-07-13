@@ -10,3 +10,7 @@ export {
   FirestoreGroupRepository,
   groupRepository,
 } from './firestoreGroupRepository';
+export {
+  FirestoreCatalogRepository,
+  catalogRepository,
+} from './firestoreCatalogRepository';
