@@ -15,6 +15,8 @@ interface GroupFormModalProps {
   initialName: string;
   onCancel: () => void;
   onSubmit: (name: string) => void;
+  // When provided (edit mode), a Delete button is shown.
+  onDelete?: () => void;
 }
 
 // Controlled add/edit form for a group. Validation comes from the domain
@@ -26,6 +28,7 @@ export function GroupFormModal({
   initialName,
   onCancel,
   onSubmit,
+  onDelete,
 }: GroupFormModalProps) {
   const [name, setName] = useState(initialName);
 
@@ -63,20 +66,29 @@ export function GroupFormModal({
             }}
           />
           <View style={styles.buttons}>
-            <Pressable style={styles.button} onPress={onCancel}>
-              <Text style={styles.cancelLabel}>Cancel</Text>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.button,
-                styles.save,
-                error !== null && styles.saveDisabled,
-              ]}
-              disabled={error !== null}
-              onPress={() => onSubmit(name.trim())}
-            >
-              <Text style={styles.saveLabel}>Save</Text>
-            </Pressable>
+            {onDelete ? (
+              <Pressable style={styles.button} onPress={onDelete}>
+                <Text style={styles.deleteLabel}>Delete</Text>
+              </Pressable>
+            ) : (
+              <View />
+            )}
+            <View style={styles.buttonsRight}>
+              <Pressable style={styles.button} onPress={onCancel}>
+                <Text style={styles.cancelLabel}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.button,
+                  styles.save,
+                  error !== null && styles.saveDisabled,
+                ]}
+                disabled={error !== null}
+                onPress={() => onSubmit(name.trim())}
+              >
+                <Text style={styles.saveLabel}>Save</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </View>
@@ -117,7 +129,11 @@ const styles = StyleSheet.create({
   },
   buttons: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  buttonsRight: {
+    flexDirection: 'row',
     gap: 8,
   },
   button: {
@@ -129,6 +145,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#6b6153',
+  },
+  deleteLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#a4262c',
   },
   save: {
     backgroundColor: '#8a5a14',

@@ -19,6 +19,7 @@ import ReorderableList, {
   type ReorderableListReorderEvent,
 } from 'react-native-reorderable-list';
 
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { GroupFormModal } from '../../components/GroupFormModal';
 import { useAuthState } from '../../hooks/useAuthState';
 import { useGroups } from '../../hooks/useGroups';
@@ -56,6 +57,7 @@ export default function GroupsScreen() {
   const [ordered, setOrdered] = useState<Group[]>(groups);
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<Group | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Group | null>(null);
 
   // Mirror the live, sorted groups locally so a drag can update positions
   // immediately; Firestore's push (after we persist) reconciles this back.
@@ -93,6 +95,24 @@ export default function GroupsScreen() {
 
     setModalVisible(false);
     await groupRepository.set(user.userId, group);
+  }
+
+  function requestDelete() {
+    // Close the edit modal and open the delete confirmation for that group.
+    setDeleteTarget(editing);
+    setModalVisible(false);
+  }
+
+  async function confirmDelete() {
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    if (!user || !target) {
+      return;
+    }
+    // Only the group document is removed here; clearing references on catalog
+    // and list items is M4-T9. Until then, items keep a now-missing groupId,
+    // which the domain resolves to "Ungrouped".
+    await groupRepository.delete(user.userId, target.id);
   }
 
   function handleReorder({ from, to }: ReorderableListReorderEvent) {
@@ -147,6 +167,17 @@ export default function GroupsScreen() {
         initialName={editing?.name ?? ''}
         onCancel={() => setModalVisible(false)}
         onSubmit={handleSubmit}
+        onDelete={editing ? requestDelete : undefined}
+      />
+
+      <ConfirmDialog
+        visible={deleteTarget !== null}
+        title="Delete group?"
+        message={`"${deleteTarget?.name ?? ''}" will be deleted. Items in it become Ungrouped.`}
+        confirmLabel="Delete"
+        destructive
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
       />
     </View>
   );
