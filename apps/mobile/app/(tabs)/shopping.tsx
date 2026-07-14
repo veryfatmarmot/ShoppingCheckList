@@ -25,27 +25,32 @@ import { useList } from '../../hooks/useList';
 
 function ShoppingListRow({
   item,
-  onPress,
+  onEdit,
+  onMarkBought,
 }: {
   item: ListItem;
-  onPress: () => void;
+  onEdit: () => void;
+  onMarkBought: () => void;
 }) {
   // One-time items (no catalog reference) get a distinct row color.
   const oneTime = item.catalogItemId === null;
 
   return (
-    <Pressable
-      style={[styles.row, oneTime && styles.rowOneTime]}
-      onPress={onPress}
-    >
-      <View style={styles.rowMain}>
+    <View style={[styles.row, oneTime && styles.rowOneTime]}>
+      <Pressable
+        style={styles.checkbox}
+        onPress={onMarkBought}
+        accessibilityRole="checkbox"
+        accessibilityLabel={`Mark ${item.itemData.name} bought`}
+      />
+      <Pressable style={styles.rowMain} onPress={onEdit}>
         <Text style={styles.rowName}>{item.itemData.name}</Text>
         {item.itemData.note ? (
           <Text style={styles.rowNote}>{item.itemData.note}</Text>
         ) : null}
-      </View>
+      </Pressable>
       <Text style={styles.rowQty}>×{item.quantity}</Text>
-    </Pressable>
+    </View>
   );
 }
 
@@ -68,6 +73,14 @@ export default function ShoppingScreen() {
   function closeForm() {
     setAddVisible(false);
     setEditing(null);
+  }
+
+  async function markBought(item: ListItem) {
+    if (!user) {
+      return;
+    }
+    // Mark bought = hard delete. The undo buffer/snackbar arrives in M5-T3/T4.
+    await listRepository.delete(user.userId, item.id);
   }
 
   async function handleSubmit({
@@ -128,7 +141,11 @@ export default function ShoppingScreen() {
             <Text style={styles.sectionHeader}>{section.title}</Text>
           )}
           renderItem={({ item }) => (
-            <ShoppingListRow item={item} onPress={() => setEditing(item)} />
+            <ShoppingListRow
+              item={item}
+              onEdit={() => setEditing(item)}
+              onMarkBought={() => markBought(item)}
+            />
           )}
           stickySectionHeadersEnabled={false}
         />
@@ -196,7 +213,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     padding: 16,
     borderRadius: 12,
     backgroundColor: '#fffdf8',
@@ -207,6 +223,14 @@ const styles = StyleSheet.create({
   rowOneTime: {
     backgroundColor: '#eadfca',
     borderColor: '#d8c9a6',
+  },
+  checkbox: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#8a5a14',
+    marginRight: 14,
   },
   rowMain: {
     flex: 1,
