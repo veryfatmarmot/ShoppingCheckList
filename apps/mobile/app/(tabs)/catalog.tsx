@@ -1,8 +1,9 @@
-import { catalogRepository } from '@shopping-check-list/data';
+import { catalogRepository, listRepository } from '@shopping-check-list/data';
 import {
   normalizeName,
   sectionItemsByGroup,
   type CatalogItem,
+  type ListItem,
 } from '@shopping-check-list/domain';
 import { randomUUID } from 'expo-crypto';
 import { useMemo, useState } from 'react';
@@ -20,24 +21,36 @@ import {
   type CatalogItemFormValues,
 } from '../../components/CatalogItemFormModal';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { QuantityModal } from '../../components/QuantityModal';
 import { useAuthState } from '../../hooks/useAuthState';
 import { useCatalog } from '../../hooks/useCatalog';
 import { useGroups } from '../../hooks/useGroups';
 
 function CatalogItemRow({
   item,
-  onPress,
+  onEdit,
+  onAdd,
 }: {
   item: CatalogItem;
-  onPress: () => void;
+  onEdit: () => void;
+  onAdd: () => void;
 }) {
   return (
-    <Pressable style={styles.row} onPress={onPress}>
-      <Text style={styles.rowName}>{item.itemData.name}</Text>
-      {item.itemData.note ? (
-        <Text style={styles.rowNote}>{item.itemData.note}</Text>
-      ) : null}
-    </Pressable>
+    <View style={styles.row}>
+      <Pressable style={styles.rowMain} onPress={onEdit}>
+        <Text style={styles.rowName}>{item.itemData.name}</Text>
+        {item.itemData.note ? (
+          <Text style={styles.rowNote}>{item.itemData.note}</Text>
+        ) : null}
+      </Pressable>
+      <Pressable
+        style={styles.addToList}
+        onPress={onAdd}
+        accessibilityLabel={`Add ${item.itemData.name} to shopping list`}
+      >
+        <Text style={styles.addToListGlyph}>+</Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -48,6 +61,7 @@ export default function CatalogScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<CatalogItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<CatalogItem | null>(null);
+  const [addTarget, setAddTarget] = useState<CatalogItem | null>(null);
 
   const sections = useMemo(
     () =>
@@ -99,6 +113,26 @@ export default function CatalogScreen() {
     setModalVisible(false);
   }
 
+  async function addToList(quantity: number) {
+    const target = addTarget;
+    setAddTarget(null);
+    if (!user || !target) {
+      return;
+    }
+    // ListItem is a snapshot: copy the catalog item's itemData at add time so
+    // later catalog edits don't change this list entry.
+    const now = Date.now();
+    const listItem: ListItem = {
+      id: randomUUID(),
+      catalogItemId: target.id,
+      quantity,
+      createdAt: now,
+      updatedAt: now,
+      itemData: { ...target.itemData },
+    };
+    await listRepository.set(user.userId, listItem);
+  }
+
   async function confirmDelete() {
     const target = deleteTarget;
     setDeleteTarget(null);
@@ -139,7 +173,11 @@ export default function CatalogScreen() {
             <Text style={styles.sectionHeader}>{section.title}</Text>
           )}
           renderItem={({ item }) => (
-            <CatalogItemRow item={item} onPress={() => openEdit(item)} />
+            <CatalogItemRow
+              item={item}
+              onEdit={() => openEdit(item)}
+              onAdd={() => setAddTarget(item)}
+            />
           )}
           stickySectionHeadersEnabled={false}
         />
@@ -167,6 +205,15 @@ export default function CatalogScreen() {
         destructive
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      <QuantityModal
+        visible={addTarget !== null}
+        itemName={addTarget?.itemData.name ?? ''}
+        initialQuantity={1}
+        confirmLabel="Add to list"
+        onCancel={() => setAddTarget(null)}
+        onSubmit={addToList}
       />
     </View>
   );
@@ -216,12 +263,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   row: {
-    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: 12,
     backgroundColor: '#fffdf8',
     borderWidth: 1,
     borderColor: '#d8cdbb',
     marginBottom: 8,
+    overflow: 'hidden',
+  },
+  rowMain: {
+    flex: 1,
+    padding: 16,
     gap: 4,
   },
   rowName: {
@@ -232,5 +285,17 @@ const styles = StyleSheet.create({
   rowNote: {
     fontSize: 14,
     color: '#6b6153',
+  },
+  addToList: {
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+    borderLeftWidth: 1,
+    borderLeftColor: '#ece3d3',
+  },
+  addToListGlyph: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#8a5a14',
   },
 });

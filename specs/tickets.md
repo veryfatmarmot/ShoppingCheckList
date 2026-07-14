@@ -174,6 +174,7 @@ Each ticket must be:
 ## M4-T4 Quantity Modal
 - Input quantity
 - Validate
+- Delivered together with M4-T3: the `QuantityModal` component (validated quantity input, `validateQuantity`) is the modal M4-T3 opens — it cannot be opened before it exists, so the two were implemented in one pass.
 
 ## M4-T5 Add One-Time Item
 - Create ListItem without catalog reference
