@@ -25,15 +25,18 @@ import { QuantityModal } from '../../components/QuantityModal';
 import { useAuthState } from '../../hooks/useAuthState';
 import { useCatalog } from '../../hooks/useCatalog';
 import { useGroups } from '../../hooks/useGroups';
+import { useList } from '../../hooks/useList';
 
 function CatalogItemRow({
   item,
   onEdit,
   onAdd,
+  inList,
 }: {
   item: CatalogItem;
   onEdit: () => void;
   onAdd: () => void;
+  inList: boolean;
 }) {
   return (
     <View style={styles.row}>
@@ -44,11 +47,20 @@ function CatalogItemRow({
         ) : null}
       </Pressable>
       <Pressable
-        style={styles.addToList}
+        style={[styles.addToList, inList && styles.addToListDisabled]}
         onPress={onAdd}
-        accessibilityLabel={`Add ${item.itemData.name} to shopping list`}
+        disabled={inList}
+        accessibilityLabel={
+          inList
+            ? `${item.itemData.name} is already in your list`
+            : `Add ${item.itemData.name} to shopping list`
+        }
       >
-        <Text style={styles.addToListGlyph}>+</Text>
+        <Text
+          style={[styles.addToListGlyph, inList && styles.addToListGlyphInList]}
+        >
+          {inList ? '✓' : '+'}
+        </Text>
       </Pressable>
     </View>
   );
@@ -58,6 +70,7 @@ export default function CatalogScreen() {
   const { user } = useAuthState();
   const { items, loading: catalogLoading } = useCatalog();
   const { groups, loading: groupsLoading } = useGroups();
+  const { items: listItems } = useList();
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<CatalogItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<CatalogItem | null>(null);
@@ -71,6 +84,18 @@ export default function CatalogScreen() {
       })),
     [items, groups],
   );
+
+  // Catalog ids already present on the shopping list — their add button is
+  // disabled (ux-flows: "already in list" = a ListItem with that catalogItemId).
+  const inListIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const listItem of listItems) {
+      if (listItem.catalogItemId !== null) {
+        ids.add(listItem.catalogItemId);
+      }
+    }
+    return ids;
+  }, [listItems]);
 
   function openCreate() {
     setEditing(null);
@@ -177,6 +202,7 @@ export default function CatalogScreen() {
               item={item}
               onEdit={() => openEdit(item)}
               onAdd={() => setAddTarget(item)}
+              inList={inListIds.has(item.id)}
             />
           )}
           stickySectionHeadersEnabled={false}
@@ -293,9 +319,16 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderLeftColor: '#ece3d3',
   },
+  addToListDisabled: {
+    backgroundColor: '#f0ece2',
+  },
   addToListGlyph: {
     fontSize: 26,
     fontWeight: '700',
     color: '#8a5a14',
+  },
+  addToListGlyphInList: {
+    fontSize: 20,
+    color: '#7a8a5a',
   },
 });
