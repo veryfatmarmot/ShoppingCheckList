@@ -187,6 +187,7 @@ Each ticket must be:
 
 ## M4-T8 Empty State
 - Show "Shopping Complete"
+- Delivered with M4-T2: the Shopping screen renders the "Shopping Complete" empty state whenever the list has no items.
 
 ## M4-T9 Group Delete Cascade
 - Before deleting a group, overwrite every referencing CatalogItem and ListItem with `itemData.groupId = null` and a newer `updatedAt`, then hard-delete the group
