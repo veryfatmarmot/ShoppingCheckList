@@ -1,8 +1,6 @@
 import {
-  hasDuplicateCatalogName,
-  normalizeName,
   validateName,
-  type CatalogItem,
+  validateQuantity,
   type Group,
 } from '@shopping-check-list/domain';
 import { useEffect, useState } from 'react';
@@ -17,66 +15,64 @@ import {
 
 import { GroupPicker } from './GroupPicker';
 
-export interface CatalogItemFormValues {
+export interface ListItemFormValues {
   name: string;
-  note: string;
+  quantity: number;
   groupId: string | null;
+  note: string;
 }
 
-interface CatalogItemFormModalProps {
+interface ListItemFormModalProps {
   visible: boolean;
   title: string;
   initialName: string;
-  initialNote: string;
+  initialQuantity: number;
   initialGroupId: string | null;
+  initialNote: string;
   groups: Group[];
-  // Active catalog items, used for best-effort duplicate-name detection.
-  existingItems: CatalogItem[];
-  // Id of the item being edited, excluded from the duplicate check.
-  editingId?: string;
   onCancel: () => void;
-  onSubmit: (values: CatalogItemFormValues) => void;
-  // When provided (edit mode), a Delete button is shown (wired in M3-T6).
-  onDelete?: () => void;
+  onSubmit: (values: ListItemFormValues) => void;
 }
 
-// Controlled add/edit form for a catalog item: name, an optional note, and a
-// group chosen from a chip picker (including "Ungrouped" → null). Validation
-// comes from the domain layer; the parent owns persistence.
-export function CatalogItemFormModal({
+// Controlled add/edit form for a shopping-list item: name, quantity, a group
+// (chip picker), and an optional note. Used for both one-time items (M4-T5)
+// and editing an existing list item (M4-T6). Validation comes from the domain
+// layer; the parent owns persistence.
+export function ListItemFormModal({
   visible,
   title,
   initialName,
-  initialNote,
+  initialQuantity,
   initialGroupId,
+  initialNote,
   groups,
-  existingItems,
-  editingId,
   onCancel,
   onSubmit,
-  onDelete,
-}: CatalogItemFormModalProps) {
+}: ListItemFormModalProps) {
   const [name, setName] = useState(initialName);
-  const [note, setNote] = useState(initialNote);
+  const [quantityText, setQuantityText] = useState(String(initialQuantity));
   const [groupId, setGroupId] = useState<string | null>(initialGroupId);
+  const [note, setNote] = useState(initialNote);
 
   useEffect(() => {
     if (visible) {
       setName(initialName);
-      setNote(initialNote);
+      setQuantityText(String(initialQuantity));
       setGroupId(initialGroupId);
+      setNote(initialNote);
     }
-  }, [visible, initialName, initialNote, initialGroupId]);
+  }, [visible, initialName, initialQuantity, initialGroupId, initialNote]);
 
-  const nameError = validateName(name);
-  const isDuplicate =
-    nameError === null &&
-    hasDuplicateCatalogName(normalizeName(name), existingItems, editingId);
-  const canSave = nameError === null && !isDuplicate;
+  const quantity = Number(quantityText);
+  const quantityValid =
+    quantityText.trim() !== '' &&
+    Number.isFinite(quantity) &&
+    validateQuantity(quantity) === null;
+  const canSave = validateName(name) === null && quantityValid;
 
   function submit() {
     if (canSave) {
-      onSubmit({ name: name.trim(), note: note.trim(), groupId });
+      onSubmit({ name: name.trim(), quantity, groupId, note: note.trim() });
     }
   }
 
@@ -99,11 +95,17 @@ export function CatalogItemFormModal({
             placeholderTextColor="#a89e8c"
             autoFocus
           />
-          {isDuplicate ? (
-            <Text style={styles.error}>
-              An item named “{name.trim()}” already exists.
-            </Text>
-          ) : null}
+
+          <Text style={styles.label}>Quantity</Text>
+          <TextInput
+            style={styles.input}
+            value={quantityText}
+            onChangeText={setQuantityText}
+            keyboardType="numeric"
+            placeholder="1"
+            placeholderTextColor="#a89e8c"
+            selectTextOnFocus
+          />
 
           <TextInput
             style={[styles.input, styles.noteInput]}
@@ -122,29 +124,20 @@ export function CatalogItemFormModal({
           />
 
           <View style={styles.buttons}>
-            {onDelete ? (
-              <Pressable style={styles.button} onPress={onDelete}>
-                <Text style={styles.deleteLabel}>Delete</Text>
-              </Pressable>
-            ) : (
-              <View />
-            )}
-            <View style={styles.buttonsRight}>
-              <Pressable style={styles.button} onPress={onCancel}>
-                <Text style={styles.cancelLabel}>Cancel</Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.button,
-                  styles.save,
-                  !canSave && styles.saveDisabled,
-                ]}
-                disabled={!canSave}
-                onPress={submit}
-              >
-                <Text style={styles.saveLabel}>Save</Text>
-              </Pressable>
-            </View>
+            <Pressable style={styles.button} onPress={onCancel}>
+              <Text style={styles.cancelLabel}>Cancel</Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.button,
+                styles.save,
+                !canSave && styles.saveDisabled,
+              ]}
+              disabled={!canSave}
+              onPress={submit}
+            >
+              <Text style={styles.saveLabel}>Save</Text>
+            </Pressable>
           </View>
         </View>
       </View>
@@ -187,11 +180,6 @@ const styles = StyleSheet.create({
     minHeight: 64,
     textAlignVertical: 'top',
   },
-  error: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#a4262c',
-  },
   label: {
     fontSize: 13,
     fontWeight: '700',
@@ -201,13 +189,9 @@ const styles = StyleSheet.create({
   },
   buttons: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
-  buttonsRight: {
-    flexDirection: 'row',
+    justifyContent: 'flex-end',
     gap: 8,
+    marginTop: 4,
   },
   button: {
     paddingVertical: 10,
@@ -218,11 +202,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#6b6153',
-  },
-  deleteLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#a4262c',
   },
   save: {
     backgroundColor: '#8a5a14',

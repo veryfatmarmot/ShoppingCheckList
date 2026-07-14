@@ -1,22 +1,34 @@
+import { listRepository } from '@shopping-check-list/data';
 import {
+  normalizeName,
   sectionItemsByGroup,
   type ListItem,
 } from '@shopping-check-list/domain';
-import { useMemo } from 'react';
+import { randomUUID } from 'expo-crypto';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Pressable,
   SectionList,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 
+import {
+  ListItemFormModal,
+  type ListItemFormValues,
+} from '../../components/ListItemFormModal';
+import { useAuthState } from '../../hooks/useAuthState';
 import { useGroups } from '../../hooks/useGroups';
 import { useList } from '../../hooks/useList';
 
 function ShoppingListRow({ item }: { item: ListItem }) {
+  // One-time items (no catalog reference) get a distinct row color.
+  const oneTime = item.catalogItemId === null;
+
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, oneTime && styles.rowOneTime]}>
       <View style={styles.rowMain}>
         <Text style={styles.rowName}>{item.itemData.name}</Text>
         {item.itemData.note ? (
@@ -29,8 +41,10 @@ function ShoppingListRow({ item }: { item: ListItem }) {
 }
 
 export default function ShoppingScreen() {
+  const { user } = useAuthState();
   const { items, loading: listLoading } = useList();
   const { groups, loading: groupsLoading } = useGroups();
+  const [addVisible, setAddVisible] = useState(false);
 
   const sections = useMemo(
     () =>
@@ -41,44 +55,93 @@ export default function ShoppingScreen() {
     [items, groups],
   );
 
-  if (listLoading || groupsLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator color="#8a5a14" />
-      </View>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.emptyTitle}>Shopping Complete</Text>
-      </View>
-    );
+  async function addOneTime({
+    name,
+    quantity,
+    groupId,
+    note,
+  }: ListItemFormValues) {
+    setAddVisible(false);
+    if (!user) {
+      return;
+    }
+    const now = Date.now();
+    const listItem: ListItem = {
+      id: randomUUID(),
+      catalogItemId: null,
+      quantity,
+      createdAt: now,
+      updatedAt: now,
+      itemData: { name, normalizedName: normalizeName(name), groupId, note },
+    };
+    await listRepository.set(user.userId, listItem);
   }
 
   return (
-    <SectionList
-      style={styles.list}
-      contentContainerStyle={styles.listContent}
-      sections={sections}
-      keyExtractor={(item) => item.id}
-      renderSectionHeader={({ section }) => (
-        <Text style={styles.sectionHeader}>{section.title}</Text>
+    <View style={styles.container}>
+      <Pressable style={styles.addButton} onPress={() => setAddVisible(true)}>
+        <Text style={styles.addLabel}>Add one-time item</Text>
+      </Pressable>
+
+      {listLoading || groupsLoading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator color="#8a5a14" />
+        </View>
+      ) : items.length === 0 ? (
+        <View style={styles.centered}>
+          <Text style={styles.emptyTitle}>Shopping Complete</Text>
+        </View>
+      ) : (
+        <SectionList
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          sections={sections}
+          keyExtractor={(item) => item.id}
+          renderSectionHeader={({ section }) => (
+            <Text style={styles.sectionHeader}>{section.title}</Text>
+          )}
+          renderItem={({ item }) => <ShoppingListRow item={item} />}
+          stickySectionHeadersEnabled={false}
+        />
       )}
-      renderItem={({ item }) => <ShoppingListRow item={item} />}
-      stickySectionHeadersEnabled={false}
-    />
+
+      <ListItemFormModal
+        visible={addVisible}
+        title="Add one-time item"
+        initialName=""
+        initialQuantity={1}
+        initialGroupId={null}
+        initialNote=""
+        groups={groups}
+        onCancel={() => setAddVisible(false)}
+        onSubmit={addOneTime}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f4efe6',
+  },
+  addButton: {
+    margin: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#8a5a14',
+  },
+  addLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fffdf8',
+  },
   centered: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: '#f4efe6',
   },
   emptyTitle: {
     fontSize: 22,
@@ -111,6 +174,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#d8cdbb',
     marginBottom: 8,
+  },
+  rowOneTime: {
+    backgroundColor: '#eadfca',
+    borderColor: '#d8c9a6',
   },
   rowMain: {
     flex: 1,

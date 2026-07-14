@@ -75,6 +75,7 @@ It must align with:
 - quantity
 - note (secondary line, only if non-empty)
 - checkbox (mark bought)
+- one-time items (no catalog reference, `catalogItemId == null`) are shown with a distinct row background color rather than a text label
 
 ## Interactions
 
