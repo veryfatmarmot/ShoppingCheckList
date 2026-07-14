@@ -202,8 +202,21 @@ If a write uses an existing ID:
 - Apply LWW rule
 
 ## Case 2: Unintended collision
-- Treat as abnormal
-- Client should log and surface for debugging
+- Treated as impossible. No runtime uniqueness check is performed on create.
+- Ids are CSPRNG-backed UUIDv4 (122 random bits, via `newEntityId` in
+  `packages/data`). Over this app's whole lifetime the collision probability is
+  on the order of 1 in 10^29 — far less likely than the device silently
+  corrupting the id in memory. Firestore's own auto-ids are generated the same
+  way, with no existence check, which is precisely why they work offline.
+- A read-before-write check was implemented and then removed: it could only ever
+  catch an RNG collision (the id is generated at the same site it is checked),
+  so it gave no protection against the realistic failure — id *reuse* from a
+  bug, which flows through `set()` with a caller-supplied id and is caught by
+  tests and review, not at runtime. It also made every create depend on a
+  Firestore read, which broke offline creation outright.
+- Worst case if a collision ever did occur: exactly one document is overwritten
+  by the newly created one (one catalog item, list item, or group disappears).
+  Bounded to a single row, visible to the user, and trivially re-entered.
 
 ---
 
