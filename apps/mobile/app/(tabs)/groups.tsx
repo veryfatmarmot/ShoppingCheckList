@@ -1,4 +1,8 @@
-import { groupRepository } from '@shopping-check-list/data';
+import {
+  catalogRepository,
+  groupRepository,
+  listRepository,
+} from '@shopping-check-list/data';
 import {
   nextGroupOrder,
   normalizeName,
@@ -109,9 +113,42 @@ export default function GroupsScreen() {
     if (!user || !target) {
       return;
     }
-    // Only the group document is removed here; clearing references on catalog
-    // and list items is M4-T9. Until then, items keep a now-missing groupId,
-    // which the domain resolves to "Ungrouped".
+
+    // M4-T9 cascade: before removing the group, clear its reference on every
+    // catalog item and list item (full-document overwrite, newer updatedAt), so
+    // no document keeps a dangling groupId. getAll (not the active-only hook)
+    // is used so soft-deleted catalog tombstones are cleared too.
+    const now = Date.now();
+    const [catalogItems, listItems] = await Promise.all([
+      catalogRepository.getAll(user.userId),
+      listRepository.getAll(user.userId),
+    ]);
+
+    const clears: Promise<void>[] = [];
+    for (const item of catalogItems) {
+      if (item.itemData.groupId === target.id) {
+        clears.push(
+          catalogRepository.set(user.userId, {
+            ...item,
+            updatedAt: now,
+            itemData: { ...item.itemData, groupId: null },
+          }),
+        );
+      }
+    }
+    for (const item of listItems) {
+      if (item.itemData.groupId === target.id) {
+        clears.push(
+          listRepository.set(user.userId, {
+            ...item,
+            updatedAt: now,
+            itemData: { ...item.itemData, groupId: null },
+          }),
+        );
+      }
+    }
+    await Promise.all(clears);
+
     await groupRepository.delete(user.userId, target.id);
   }
 
