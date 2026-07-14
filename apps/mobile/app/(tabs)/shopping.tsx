@@ -19,9 +19,11 @@ import {
   ListItemFormModal,
   type ListItemFormValues,
 } from '../../components/ListItemFormModal';
+import { Snackbar } from '../../components/Snackbar';
 import { useAuthState } from '../../hooks/useAuthState';
 import { useGroups } from '../../hooks/useGroups';
 import { useList } from '../../hooks/useList';
+import { useShoppingUndo } from '../../hooks/useShoppingUndo';
 
 function ShoppingListRow({
   item,
@@ -60,6 +62,9 @@ export default function ShoppingScreen() {
   const { groups, loading: groupsLoading } = useGroups();
   const [addVisible, setAddVisible] = useState(false);
   const [editing, setEditing] = useState<ListItem | null>(null);
+  const { pending, remaining, markBought, undo } = useShoppingUndo(
+    user?.userId,
+  );
 
   const sections = useMemo(
     () =>
@@ -73,14 +78,6 @@ export default function ShoppingScreen() {
   function closeForm() {
     setAddVisible(false);
     setEditing(null);
-  }
-
-  async function markBought(item: ListItem) {
-    if (!user) {
-      return;
-    }
-    // Mark bought = hard delete. The undo buffer/snackbar arrives in M5-T3/T4.
-    await listRepository.delete(user.userId, item.id);
   }
 
   async function handleSubmit({
@@ -162,6 +159,18 @@ export default function ShoppingScreen() {
         onCancel={closeForm}
         onSubmit={handleSubmit}
       />
+
+      {pending ? (
+        <Snackbar
+          message={
+            remaining > 1
+              ? `Bought: ${pending.itemData.name} (+${remaining - 1} more)`
+              : `Bought: ${pending.itemData.name}`
+          }
+          actionLabel="Undo"
+          onAction={() => void undo()}
+        />
+      ) : null}
     </View>
   );
 }

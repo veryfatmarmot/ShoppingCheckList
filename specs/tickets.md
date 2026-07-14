@@ -213,6 +213,7 @@ Each ticket must be:
 ## M5-T4 Undo Action
 - Recreate ListItem (new ID)
 - Triggered from the "Bought — Undo" snackbar shown after marking an item bought (see `ux-flows.md` → Undo)
+- Delivered together with M5-T3: the buffer and its undo action are one feature (a buffer with no way to trigger undo isn't a testable unit), implemented in the `useShoppingUndo` hook + Snackbar.
 
 ## M5-T5 Conflict Handling
 - Apply last-write-wins

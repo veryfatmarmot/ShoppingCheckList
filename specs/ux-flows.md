@@ -88,7 +88,7 @@ It must align with:
 ### Mark as bought
 - deletes ListItem
 - triggers local undo buffer
-- shows a transient snackbar: "Bought — Undo" (~5 s); tapping Undo recreates the item from the buffer (new ID)
+- shows a transient snackbar: "Bought — Undo" (~5 s); tapping Undo recreates the item from the buffer (new ID). Tapping Undo repeatedly restores earlier deletions too (LIFO, up to 10) — see Global UX Rules → Undo.
 
 ### Empty state
 - show "Shopping Complete"
@@ -269,6 +269,7 @@ It must align with:
 - local only
 - recreates deleted items with a new ID
 - surfaced via the "Bought — Undo" snackbar after marking bought (buffer keeps last 10 deletions)
+- multiple undo: the snackbar pops the buffer LIFO — each tap restores the most recent remaining deletion and advances to the next, up to the 10-item buffer. The snackbar shows a "(+N more)" hint while more can be undone, and its timer refreshes on each undo.
 
 ---
 
