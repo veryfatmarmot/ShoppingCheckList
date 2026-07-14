@@ -23,12 +23,21 @@ import { useAuthState } from '../../hooks/useAuthState';
 import { useGroups } from '../../hooks/useGroups';
 import { useList } from '../../hooks/useList';
 
-function ShoppingListRow({ item }: { item: ListItem }) {
+function ShoppingListRow({
+  item,
+  onPress,
+}: {
+  item: ListItem;
+  onPress: () => void;
+}) {
   // One-time items (no catalog reference) get a distinct row color.
   const oneTime = item.catalogItemId === null;
 
   return (
-    <View style={[styles.row, oneTime && styles.rowOneTime]}>
+    <Pressable
+      style={[styles.row, oneTime && styles.rowOneTime]}
+      onPress={onPress}
+    >
       <View style={styles.rowMain}>
         <Text style={styles.rowName}>{item.itemData.name}</Text>
         {item.itemData.note ? (
@@ -36,7 +45,7 @@ function ShoppingListRow({ item }: { item: ListItem }) {
         ) : null}
       </View>
       <Text style={styles.rowQty}>×{item.quantity}</Text>
-    </View>
+    </Pressable>
   );
 }
 
@@ -45,6 +54,7 @@ export default function ShoppingScreen() {
   const { items, loading: listLoading } = useList();
   const { groups, loading: groupsLoading } = useGroups();
   const [addVisible, setAddVisible] = useState(false);
+  const [editing, setEditing] = useState<ListItem | null>(null);
 
   const sections = useMemo(
     () =>
@@ -55,25 +65,42 @@ export default function ShoppingScreen() {
     [items, groups],
   );
 
-  async function addOneTime({
+  function closeForm() {
+    setAddVisible(false);
+    setEditing(null);
+  }
+
+  async function handleSubmit({
     name,
     quantity,
     groupId,
     note,
   }: ListItemFormValues) {
-    setAddVisible(false);
+    const target = editing;
+    closeForm();
     if (!user) {
       return;
     }
     const now = Date.now();
-    const listItem: ListItem = {
-      id: randomUUID(),
-      catalogItemId: null,
-      quantity,
-      createdAt: now,
-      updatedAt: now,
-      itemData: { name, normalizedName: normalizeName(name), groupId, note },
+    const itemData = {
+      name,
+      normalizedName: normalizeName(name),
+      groupId,
+      note,
     };
+    // Edit overwrites the full document but preserves id/catalogItemId/createdAt
+    // (so a catalog-backed item stays linked and one-time stays one-time);
+    // add creates a new one-time item.
+    const listItem: ListItem = target
+      ? { ...target, quantity, updatedAt: now, itemData }
+      : {
+          id: randomUUID(),
+          catalogItemId: null,
+          quantity,
+          createdAt: now,
+          updatedAt: now,
+          itemData,
+        };
     await listRepository.set(user.userId, listItem);
   }
 
@@ -100,21 +127,23 @@ export default function ShoppingScreen() {
           renderSectionHeader={({ section }) => (
             <Text style={styles.sectionHeader}>{section.title}</Text>
           )}
-          renderItem={({ item }) => <ShoppingListRow item={item} />}
+          renderItem={({ item }) => (
+            <ShoppingListRow item={item} onPress={() => setEditing(item)} />
+          )}
           stickySectionHeadersEnabled={false}
         />
       )}
 
       <ListItemFormModal
-        visible={addVisible}
-        title="Add one-time item"
-        initialName=""
-        initialQuantity={1}
-        initialGroupId={null}
-        initialNote=""
+        visible={addVisible || editing !== null}
+        title={editing ? 'Edit item' : 'Add one-time item'}
+        initialName={editing?.itemData.name ?? ''}
+        initialQuantity={editing?.quantity ?? 1}
+        initialGroupId={editing?.itemData.groupId ?? null}
+        initialNote={editing?.itemData.note ?? ''}
         groups={groups}
-        onCancel={() => setAddVisible(false)}
-        onSubmit={addOneTime}
+        onCancel={closeForm}
+        onSubmit={handleSubmit}
       />
     </View>
   );
