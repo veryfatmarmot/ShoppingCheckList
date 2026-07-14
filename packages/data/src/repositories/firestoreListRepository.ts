@@ -14,6 +14,7 @@ import { firestoreDb } from '../firestore';
 
 import { itemDataFromRaw } from './itemDataMapper';
 import type { ListRepository } from './listRepository';
+import { withLwwConflictHandling } from './writeConflict';
 import type {
   RepositorySubscription,
   RepositoryUnsubscribe,
@@ -74,7 +75,9 @@ export class FirestoreListRepository implements ListRepository {
   }
 
   async set(userId: RepositoryUserId, item: ListItem): Promise<void> {
-    await setDoc(doc(listCollection(userId), item.id), item);
+    await withLwwConflictHandling(
+      setDoc(doc(listCollection(userId), item.id), item),
+    );
   }
 
   async delete(userId: RepositoryUserId, itemId: string): Promise<void> {

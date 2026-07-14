@@ -18,6 +18,7 @@ import type {
   RepositoryUnsubscribe,
   RepositoryUserId,
 } from './types';
+import { withLwwConflictHandling } from './writeConflict';
 
 // Typed mapper between the Group domain entity and its Firestore document.
 // The document ID is the source of truth for `id` (schema guarantees they are
@@ -75,7 +76,9 @@ export class FirestoreGroupRepository implements GroupRepository {
   }
 
   async set(userId: RepositoryUserId, group: Group): Promise<void> {
-    await setDoc(doc(groupsCollection(userId), group.id), group);
+    await withLwwConflictHandling(
+      setDoc(doc(groupsCollection(userId), group.id), group),
+    );
   }
 
   async delete(userId: RepositoryUserId, groupId: string): Promise<void> {

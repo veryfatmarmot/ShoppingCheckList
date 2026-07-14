@@ -23,6 +23,12 @@ This is a BEHAVIORAL contract. It must align with:
     new.updatedAt > existing.updatedAt
 
 - Entire document is replaced (no field-level merge)
+- Enforcement: the Firestore security rules reject any update whose `updatedAt`
+  does not strictly exceed the stored value, so the higher-`updatedAt` write
+  always wins regardless of arrival order.
+- Losing write (client): a rejected stale write surfaces as `permission-denied`.
+  The client absorbs it (logs, does not throw) because the winning document is
+  delivered by the live subscription — see `packages/data` `withLwwConflictHandling`.
 
 ---
 

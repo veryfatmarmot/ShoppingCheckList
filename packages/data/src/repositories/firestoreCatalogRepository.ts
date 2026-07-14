@@ -13,6 +13,7 @@ import { firestoreDb } from '../firestore';
 
 import type { CatalogRepository } from './catalogRepository';
 import { itemDataFromRaw } from './itemDataMapper';
+import { withLwwConflictHandling } from './writeConflict';
 import type {
   RepositorySubscription,
   RepositoryUnsubscribe,
@@ -75,7 +76,9 @@ export class FirestoreCatalogRepository implements CatalogRepository {
   }
 
   async set(userId: RepositoryUserId, item: CatalogItem): Promise<void> {
-    await setDoc(doc(catalogCollection(userId), item.id), item);
+    await withLwwConflictHandling(
+      setDoc(doc(catalogCollection(userId), item.id), item),
+    );
   }
 }
 
