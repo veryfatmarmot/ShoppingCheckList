@@ -33,9 +33,14 @@ Enable fast, frictionless shared shopping with:
 
 - Minimal friction when adding items
 - Reliable sync between devices
-- Works without internet
+- Works without internet †
 - Structured shopping (groups)
 - Reusable catalog for speed
+
+† **Not currently delivered on Android/iOS.** Opening the app without a network
+connection shows no data at all (no list, no catalog, no groups). See "Mobile
+offline persistence (MVP)" below — this is the MVP's most serious gap, and it
+defeats the value proposition in exactly the situation it exists for.
 
 ---
 
@@ -241,8 +246,10 @@ Enable fast, frictionless shared shopping with:
 
 ## Mobile offline persistence (MVP)
 - MVP uses a single Firestore JS SDK across web and mobile; on Android/iOS this has no disk-backed offline cache (see `sync-rules.md` → "Known MVP Limitation — Mobile Offline Persistence")
-- An offline edit that hasn't synced before the app is backgrounded can be silently lost — not just in rare "killed while offline" scenarios, but on ordinary backgrounding
-- Explicitly accepted for MVP; must be resolved (native Firestore SDK on mobile) before the project is considered production-ready
+- **Writes:** an offline edit that hasn't synced before the app is backgrounded can be silently lost — not just in rare "killed while offline" scenarios, but on ordinary backgrounding
+- **Reads (verified on device, M6-T4):** the app can only show data it loaded while online in the current session. Cold-start with no network shows an **empty app** — no list, no catalog, no groups. This is the freezer-aisle case: the OS kills the app in your pocket, you reopen it in a low-signal store, and your shopping list is gone.
+- The read blackout is the more serious of the two: it does not merely risk losing an edit, it makes the app **useless in its primary use case**
+- Explicitly accepted when the tradeoff was taken (it was framed then only as lost writes, which understated it). Resolved by the native Firestore SDK on mobile — **P1-T1 should land before the app is relied on for real shopping**, not merely "before production"
 
 ---
 
@@ -258,4 +265,8 @@ Enable fast, frictionless shared shopping with:
 
 - UX remains simple and predictable
 
-\* MVP exception: on Android/iOS, an offline edit not yet synced can be lost if the app is backgrounded long enough for the OS to freeze/kill it. See "Mobile offline persistence (MVP)" above. Must be resolved before production.
+\* MVP exception (Android/iOS), verified on device in M6-T4:
+- an offline edit not yet synced can be lost if the app is backgrounded long enough for the OS to freeze/kill it; and
+- **the app shows no data at all when opened without a network connection** — so "use app offline" is not met for reads either.
+
+See "Mobile offline persistence (MVP)" above. Must be resolved (P1-T1) before the app is relied on for real shopping.

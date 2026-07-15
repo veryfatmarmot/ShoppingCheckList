@@ -15,6 +15,9 @@ This is a BEHAVIORAL contract. It must align with:
 - Writes are applied locally first
 - Firestore syncs changes when connection is available
 
+⚠ On Android/iOS this principle is **not currently met for reads**. See
+"Known MVP Limitation — Mobile Offline Persistence" below.
+
 ## Conflict Resolution
 - Strategy: Last-Write-Wins (LWW)
 - Field: `updatedAt`
@@ -38,16 +41,44 @@ This is a BEHAVIORAL contract. It must align with:
 - MVP accesses Firestore/Auth via the single `firebase` (web/modular) SDK on every platform, including the Android/iOS app (via Expo).
 - This SDK's persistent local cache is backed by IndexedDB, which does not exist in React Native. On mobile, Firestore therefore falls back to an in-memory write queue only — nothing is persisted to disk.
 
-## Concrete failure mode
+## Concrete failure mode — writes
 - A write made while offline survives only as long as the app's JS process stays alive.
 - Backgrounding the app is enough to trigger this: the OS freezes the JS thread within seconds (no background execution modes are configured), so even if connectivity returns while backgrounded, the queued write cannot flush — no code is running to notice.
 - If the OS later reclaims the frozen process (common after backgrounding for an extended period), the in-memory queue is destroyed with it. The write is lost silently: no error, no local record, nothing to retry.
 - This is not a rare edge case restricted to "killed while offline" — it can happen on ordinary backgrounding, which is the common case for a shopping app used in-store.
 
+## Concrete failure mode — reads (verified on device, M6-T4)
+The same missing disk cache cripples reads, and this is **more severe than the
+write loss** because it breaks the app's primary use case outright:
+
+- Offline, the app can only show collections whose subscription actually ran
+  **while online in the current session**. Nothing else exists to read.
+- Consequence in-session: open the app online on the Shopping tab (which
+  subscribes to `listItems` + `groups`), go offline, then open Catalog for the
+  first time → **the catalog is empty**, because `catalogItems` was never
+  fetched. Verified on device.
+- Consequence on cold start: kill the app, go offline, reopen → **the entire app
+  is empty** — no shopping list, no catalog, no groups. Nothing was ever loaded
+  and there is no disk cache to fall back on. Firestore logs "Could not reach
+  Cloud Firestore backend… operating in offline mode". Verified on device.
+- This is the freezer-aisle scenario: the OS kills the app in your pocket, you
+  reopen it in a low-signal store, and your shopping list is gone.
+- Side effect: catalog duplicate detection is blind offline, since it compares
+  against the items currently loaded (which may be none). Tolerated — prevention
+  is already specified as best-effort.
+
 ## Status
 - Accepted as an explicit, known MVP gap — not hidden, not assumed away.
-- The MVP does **not** meet the PRD's "use app offline without data loss" guarantee on Android/iOS for edits that haven't reached Firestore before the app is backgrounded.
-- The project must not be considered production-ready / "done" until this is resolved.
+- The MVP does **not** meet the PRD's "use app offline without data loss"
+  guarantee on Android/iOS for edits that haven't reached Firestore before the
+  app is backgrounded.
+- The MVP also does **not** meet this document's own "all operations must work
+  offline" principle, nor the PRD's "Works without internet" value proposition,
+  for **reads** on Android/iOS.
+- The project must not be considered production-ready / "done" until this is
+  resolved. Given the read blackout, P1-T1 should be completed **before the app
+  is relied on for real shopping** (see `tickets.md` → R1 / P1-T1), not merely
+  before some later notion of "production".
 
 ## Planned resolution (post-MVP)
 - Replace the mobile data-layer implementation in `packages/data` with `@react-native-firebase/firestore` + `@react-native-firebase/auth` (native SDKs with real disk-backed offline persistence and automatic background sync), behind the existing `CatalogRepository` / `ListRepository` / `GroupRepository` interfaces.

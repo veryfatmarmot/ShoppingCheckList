@@ -237,6 +237,8 @@ Each ticket must be:
 
 ## M6-T4 Offline Tests
 - Create/edit/delete offline
+- Manual checklist: `docs/offline-test-plan.md` (offline behavior lives in the Firestore SDK, not in pure logic, so it cannot be covered by Vitest)
+- **First run found a release-blocking defect.** Writes pass, but reads fail: on Android the app can only show data loaded while online in the current session, and a cold start with no network shows an **empty app**. This defeats the product's core promise and promotes **P1-T1** ahead of real-world use (see R1 below).
 
 ## M6-T5 UX Polish
 - Improve responsiveness
@@ -249,7 +251,14 @@ Each ticket must be:
 
 # R1 — Use It For Real
 
-Ships the finished MVP onto the household's devices. Runs after M6. Independent of (and typically before) the Post-MVP hardening below.
+Ships the finished MVP onto the household's devices. Runs after M6.
+
+⚠ **P1-T1 is now a prerequisite of R1, not an optional follow-up.** M6-T4 verified
+on device that with no network the Android app shows *no data at all* — no list,
+no catalog, no groups (see `sync-rules.md` → Known MVP Limitation, reads). A
+shopping list that goes blank in a low-signal store fails at the one moment it
+exists for, so P1-T1 (native Firebase SDK, real disk-backed persistence) must land
+before the app is relied on for real shopping.
 
 ## R1-T1 Release Android Build
 - Signed release APK with the JS bundle embedded — the app must run without a Metro dev server
