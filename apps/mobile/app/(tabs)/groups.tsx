@@ -253,12 +253,12 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 16,
     paddingBottom: 16,
-    gap: 8,
+    gap: 6,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'stretch',
-    borderRadius: 12,
+    borderRadius: 10,
     backgroundColor: '#fffdf8',
     borderWidth: 1,
     borderColor: '#d8cdbb',
@@ -266,11 +266,12 @@ const styles = StyleSheet.create({
   },
   rowMain: {
     flex: 1,
-    padding: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     justifyContent: 'center',
   },
   rowName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#1f1b16',
   },
