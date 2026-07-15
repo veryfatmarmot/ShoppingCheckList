@@ -15,6 +15,15 @@ import {
   Text,
   View,
 } from 'react-native';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+
+// How long the "checked → fade out" animation runs before the item is deleted.
+const BOUGHT_ANIM_MS = 250;
 
 import {
   ListItemFormModal,
@@ -39,8 +48,34 @@ function ShoppingListRow({
   // One-time items (no catalog reference) get a distinct row color.
   const oneTime = item.catalogItemId === null;
 
+  // 0 = normal, 1 = fully "checked and leaving". Tapping the checkbox fills it
+  // and fades/slides the row out; the actual delete fires when it completes.
+  const progress = useSharedValue(0);
+
+  const rowStyle = useAnimatedStyle(() => ({
+    opacity: 1 - progress.value,
+    transform: [{ translateX: progress.value * 24 }],
+  }));
+
+  // The tick fills in over the first half, so it reads as "checked" before the
+  // row is gone.
+  const checkStyle = useAnimatedStyle(() => ({
+    opacity: Math.min(progress.value / 0.5, 1),
+  }));
+
+  function handleBought() {
+    if (progress.value !== 0) {
+      return; // already leaving — ignore repeat taps
+    }
+    progress.value = withTiming(1, { duration: BOUGHT_ANIM_MS }, (finished) => {
+      if (finished) {
+        runOnJS(onMarkBought)();
+      }
+    });
+  }
+
   return (
-    <View style={[styles.row, oneTime && styles.rowOneTime]}>
+    <Animated.View style={[styles.row, oneTime && styles.rowOneTime, rowStyle]}>
       <Pressable style={styles.rowMain} onPress={onEdit}>
         <Text style={styles.rowName}>{item.itemData.name}</Text>
         {item.itemData.note ? (
@@ -52,12 +87,16 @@ function ShoppingListRow({
           catalog's right-side action control. */}
       <Pressable
         style={styles.checkbox}
-        onPress={onMarkBought}
+        onPress={handleBought}
         hitSlop={10}
         accessibilityRole="checkbox"
         accessibilityLabel={`Mark ${item.itemData.name} bought`}
-      />
-    </View>
+      >
+        <Animated.View style={[styles.checkFill, checkStyle]}>
+          <Text style={styles.checkMark}>✓</Text>
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -285,6 +324,24 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#8a5a14',
     marginLeft: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  checkFill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#8a5a14',
+  },
+  checkMark: {
+    color: '#fffdf8',
+    fontSize: 13,
+    fontWeight: '700',
   },
   // Name + note share a line; the note hugs the right (marginLeft auto) and
   // wraps to its own line below only when it doesn't fit next to the name.
