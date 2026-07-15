@@ -270,9 +270,11 @@ post-MVP. Expect "it was empty in the store" to be a possible finding of that
 real-world test — that is the known trade, not a surprise.
 
 ## R1-T1 Release Android Build
-- Signed release APK with the JS bundle embedded — the app must run without a Metro dev server
-- Create a release keystore, store it safely (it is not the shared debug keystore), and register its SHA-1 with the Google Android OAuth client
-- Install on all household devices
+- **No Play Store for MVP.** Owner will manually sideload the APK onto the family's phones. The Play Store release is out of scope for the MVP.
+- The hard requirement: a **standalone** build — signed release APK with the JS bundle **embedded**, so it runs with no Metro dev server and talks directly to Firebase (the "real server"). Today the app only runs while Metro is up on the dev PC; that must stop being true.
+- Create a release keystore, store it safely (it is not the shared debug keystore), and register its SHA-1 with the Google Android OAuth client (Google Sign-In breaks in a release build otherwise).
+- Install on all household devices.
+- Caveat still applies: "works all the time" means whenever it can reach Firebase. A cold start with no network is still blank (P1-T1 deferred); M6-T5 mitigates the in-session offline case only.
 
 ## R1-T2 Web Hosting
 - Expo web export deployed to Firebase Hosting
