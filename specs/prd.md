@@ -249,7 +249,7 @@ defeats the value proposition in exactly the situation it exists for.
 - **Writes:** an offline edit that hasn't synced before the app is backgrounded can be silently lost — not just in rare "killed while offline" scenarios, but on ordinary backgrounding
 - **Reads (verified on device, M6-T4):** the app can only show data it loaded while online in the current session. Cold-start with no network shows an **empty app** — no list, no catalog, no groups. This is the freezer-aisle case: the OS kills the app in your pocket, you reopen it in a low-signal store, and your shopping list is gone.
 - The read blackout is the more serious of the two: it does not merely risk losing an edit, it makes the app **useless in its primary use case**
-- Explicitly accepted when the tradeoff was taken (it was framed then only as lost writes, which understated it). Resolved by the native Firestore SDK on mobile — **P1-T1 should land before the app is relied on for real shopping**, not merely "before production"
+- Explicitly accepted when the tradeoff was taken (it was framed then only as lost writes, which understated it) — and re-affirmed after M6-T4 surfaced the read blackout: R1 ships with this gap so the family can start real-world testing, with the native-SDK fix (P1-T1) scheduled post-MVP. M6-T5 (eager-load) partly mitigates it in-session but does not fix cold-start
 
 ---
 

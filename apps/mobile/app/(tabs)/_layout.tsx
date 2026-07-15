@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { OfflineBanner } from '../../components/OfflineBanner';
 import { SignOutControl } from '../../components/SignOutControl';
+import { AppDataProvider } from '../../context/AppDataProvider';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 
 // M1-T3 app shell + M1-T6 shared-header sign-out. The auth guard (M1-T4)
@@ -13,19 +14,21 @@ export default function TabsLayout() {
   const online = useOnlineStatus();
 
   return (
-    <View style={{ flex: 1 }}>
-      {online ? null : <OfflineBanner />}
-      <Tabs
-        screenOptions={{
-          headerShown: true,
-          headerRight: () => <SignOutControl />,
-          headerStatusBarHeight: online ? undefined : 0,
-        }}
-      >
-        <Tabs.Screen name="shopping" options={{ title: 'Shopping List' }} />
-        <Tabs.Screen name="catalog" options={{ title: 'Catalog' }} />
-        <Tabs.Screen name="groups" options={{ title: 'Groups' }} />
-      </Tabs>
-    </View>
+    <AppDataProvider>
+      <View style={{ flex: 1 }}>
+        {online ? null : <OfflineBanner />}
+        <Tabs
+          screenOptions={{
+            headerShown: true,
+            headerRight: () => <SignOutControl />,
+            headerStatusBarHeight: online ? undefined : 0,
+          }}
+        >
+          <Tabs.Screen name="shopping" options={{ title: 'Shopping List' }} />
+          <Tabs.Screen name="catalog" options={{ title: 'Catalog' }} />
+          <Tabs.Screen name="groups" options={{ title: 'Groups' }} />
+        </Tabs>
+      </View>
+    </AppDataProvider>
   );
 }

@@ -75,10 +75,12 @@ write loss** because it breaks the app's primary use case outright:
 - The MVP also does **not** meet this document's own "all operations must work
   offline" principle, nor the PRD's "Works without internet" value proposition,
   for **reads** on Android/iOS.
-- The project must not be considered production-ready / "done" until this is
-  resolved. Given the read blackout, P1-T1 should be completed **before the app
-  is relied on for real shopping** (see `tickets.md` → R1 / P1-T1), not merely
-  before some later notion of "production".
+- The project is not "done" until this is resolved (P1-T1).
+- Owner decision: R1 ships **with** this gap, to get the app into real family use
+  for testing sooner. M6-T5 (load all collections at startup) mitigates the
+  in-session case — everything works offline provided the app was opened online
+  earlier and the OS has not killed it — but the cold-start blackout remains
+  until P1-T1. This trade is accepted knowingly, not assumed away.
 
 ## Planned resolution (post-MVP)
 - Replace the mobile data-layer implementation in `packages/data` with `@react-native-firebase/firestore` + `@react-native-firebase/auth` (native SDKs with real disk-backed offline persistence and automatic background sync), behind the existing `CatalogRepository` / `ListRepository` / `GroupRepository` interfaces.

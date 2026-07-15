@@ -240,11 +240,18 @@ Each ticket must be:
 - Manual checklist: `docs/offline-test-plan.md` (offline behavior lives in the Firestore SDK, not in pure logic, so it cannot be covered by Vitest)
 - **First run found a release-blocking defect.** Writes pass, but reads fail: on Android the app can only show data loaded while online in the current session, and a cold start with no network shows an **empty app**. This defeats the product's core promise and promotes **P1-T1** ahead of real-world use (see R1 below).
 
-## M6-T5 UX Polish
+## M6-T5 Load All Collections at Startup (shared data provider)
+- Runs next, before M6-T6/T7.
+- One `AppDataProvider` (minimal React Context — permitted by `tech-stack.md` for exactly this "load once, share" case) mounted in the signed-in area, subscribing to all three collections (`groups`, `catalogItems`, `listItems`) once at app start.
+- `useGroups` / `useCatalog` / `useList` are rewritten to read from the provider instead of each opening their own listener — this also removes today's duplicate listeners (`useGroups` was subscribed by 3 screens, `useList` by 2).
+- Effect: every tab has data from launch (no wait-until-you-open-it), and on offline→online the always-active listeners auto-resync all collections.
+- Scope note (does NOT fix cold-start offline): while the mobile cache is memory-only (P1-T1 deferred), this only helps while the app process stays alive. A cold start with no network is still blank — see `sync-rules.md` → Known MVP Limitation, reads. Eager-load is a partial mitigation of the in-session case, not a substitute for P1-T1.
+
+## M6-T6 UX Polish
 - Improve responsiveness
 - Fix edge cases
 
-## M6-T6 Backlog Prep
+## M6-T7 Backlog Prep
 - Prepare next phase features
 
 ---
@@ -253,12 +260,14 @@ Each ticket must be:
 
 Ships the finished MVP onto the household's devices. Runs after M6.
 
-⚠ **P1-T1 is now a prerequisite of R1, not an optional follow-up.** M6-T4 verified
-on device that with no network the Android app shows *no data at all* — no list,
-no catalog, no groups (see `sync-rules.md` → Known MVP Limitation, reads). A
-shopping list that goes blank in a low-signal store fails at the one moment it
-exists for, so P1-T1 (native Firebase SDK, real disk-backed persistence) must land
-before the app is relied on for real shopping.
+⚠ **Known limitation shipping in R1 (owner-accepted):** M6-T4 verified on device
+that with no network a cold-started Android app shows *no data at all* — no list,
+catalog, or groups (see `sync-rules.md` → Known MVP Limitation, reads). M6-T5
+(eager-load) mitigates the in-session case but not cold-start. The owner has
+explicitly accepted releasing R1 with this gap, to get the app into real family
+use for testing; the real fix (P1-T1, native SDK with disk persistence) stays
+post-MVP. Expect "it was empty in the store" to be a possible finding of that
+real-world test — that is the known trade, not a surprise.
 
 ## R1-T1 Release Android Build
 - Signed release APK with the JS bundle embedded — the app must run without a Metro dev server
