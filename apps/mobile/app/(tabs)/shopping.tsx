@@ -41,12 +41,6 @@ function ShoppingListRow({
 
   return (
     <View style={[styles.row, oneTime && styles.rowOneTime]}>
-      <Pressable
-        style={styles.checkbox}
-        onPress={onMarkBought}
-        accessibilityRole="checkbox"
-        accessibilityLabel={`Mark ${item.itemData.name} bought`}
-      />
       <Pressable style={styles.rowMain} onPress={onEdit}>
         <Text style={styles.rowName}>{item.itemData.name}</Text>
         {item.itemData.note ? (
@@ -54,6 +48,15 @@ function ShoppingListRow({
         ) : null}
       </Pressable>
       <Text style={styles.rowQty}>×{item.quantity}</Text>
+      {/* Mark-bought on the right — easier thumb reach, and consistent with the
+          catalog's right-side action control. */}
+      <Pressable
+        style={styles.checkbox}
+        onPress={onMarkBought}
+        hitSlop={10}
+        accessibilityRole="checkbox"
+        accessibilityLabel={`Mark ${item.itemData.name} bought`}
+      />
     </View>
   );
 }
@@ -281,7 +284,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 2,
     borderColor: '#8a5a14',
-    marginRight: 10,
+    marginLeft: 12,
   },
   // Name + note share a line; the note hugs the right (marginLeft auto) and
   // wraps to its own line below only when it doesn't fit next to the name.
