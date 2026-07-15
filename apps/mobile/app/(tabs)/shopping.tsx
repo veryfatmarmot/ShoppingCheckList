@@ -144,19 +144,17 @@ export default function ShoppingScreen() {
     }
   }
 
+  const addButton = (
+    <Pressable style={styles.addButton} onPress={() => setAddVisible(true)}>
+      <Text style={styles.addLabel}>Add one-time item</Text>
+    </Pressable>
+  );
+
   return (
     <View style={styles.container}>
-      <Pressable style={styles.addButton} onPress={() => setAddVisible(true)}>
-        <Text style={styles.addLabel}>Add one-time item</Text>
-      </Pressable>
-
       {listLoading || groupsLoading ? (
         <View style={styles.centered}>
           <ActivityIndicator color="#8a5a14" />
-        </View>
-      ) : items.length === 0 ? (
-        <View style={styles.centered}>
-          <Text style={styles.emptyTitle}>Shopping Complete</Text>
         </View>
       ) : (
         <SectionList
@@ -164,6 +162,14 @@ export default function ShoppingScreen() {
           contentContainerStyle={styles.listContent}
           sections={sections}
           keyExtractor={(item) => item.id}
+          // The add button lives inside the list so it scrolls away with the
+          // items, saving header space.
+          ListHeaderComponent={addButton}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text style={styles.emptyTitle}>Shopping Complete</Text>
+            </View>
+          }
           renderSectionHeader={({ section }) => (
             <Text style={styles.sectionHeader}>{section.title}</Text>
           )}
@@ -212,7 +218,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f4efe6',
   },
   addButton: {
-    margin: 16,
+    marginBottom: 8,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
@@ -228,6 +234,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
+  },
+  empty: {
+    alignItems: 'center',
+    paddingTop: 56,
   },
   emptyTitle: {
     fontSize: 22,
