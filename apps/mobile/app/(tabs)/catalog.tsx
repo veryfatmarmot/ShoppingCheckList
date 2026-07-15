@@ -31,13 +31,18 @@ function CatalogItemRow({
   item,
   onEdit,
   onAdd,
-  inList,
+  onRemove,
+  inListQuantity,
 }: {
   item: CatalogItem;
   onEdit: () => void;
   onAdd: () => void;
-  inList: boolean;
+  onRemove: () => void;
+  // Quantity currently on the shopping list, or null if not on the list.
+  inListQuantity: number | null;
 }) {
+  const inList = inListQuantity !== null;
+
   return (
     <View style={styles.row}>
       <Pressable style={styles.rowMain} onPress={onEdit}>
@@ -46,20 +51,21 @@ function CatalogItemRow({
           <Text style={styles.rowNote}>{item.itemData.note}</Text>
         ) : null}
       </Pressable>
+      {/* Not on list: "+" opens the quantity modal. On list: shows a check with
+          the added quantity, and tapping removes it from the list (no popup). */}
       <Pressable
-        style={[styles.addToList, inList && styles.addToListDisabled]}
-        onPress={onAdd}
-        disabled={inList}
+        style={[styles.addToList, inList && styles.addToListInList]}
+        onPress={inList ? onRemove : onAdd}
         accessibilityLabel={
           inList
-            ? `${item.itemData.name} is already in your list`
+            ? `${item.itemData.name}: ${inListQuantity} on your list — tap to remove`
             : `Add ${item.itemData.name} to shopping list`
         }
       >
         <Text
           style={[styles.addToListGlyph, inList && styles.addToListGlyphInList]}
         >
-          {inList ? '✓' : '+'}
+          {inList ? `✓ ${inListQuantity}` : '+'}
         </Text>
       </Pressable>
     </View>
@@ -85,17 +91,36 @@ export default function CatalogScreen() {
     [items, groups],
   );
 
-  // Catalog ids already present on the shopping list — their add button is
-  // disabled (ux-flows: "already in list" = a ListItem with that catalogItemId).
-  const inListIds = useMemo(() => {
-    const ids = new Set<string>();
+  // Per catalog id, the total quantity currently on the shopping list and the
+  // list-item ids backing it (usually one; more only via offline duplicates).
+  const inList = useMemo(() => {
+    const map = new Map<string, { quantity: number; itemIds: string[] }>();
     for (const listItem of listItems) {
-      if (listItem.catalogItemId !== null) {
-        ids.add(listItem.catalogItemId);
+      if (listItem.catalogItemId === null) {
+        continue;
+      }
+      const entry = map.get(listItem.catalogItemId);
+      if (entry) {
+        entry.quantity += listItem.quantity;
+        entry.itemIds.push(listItem.id);
+      } else {
+        map.set(listItem.catalogItemId, {
+          quantity: listItem.quantity,
+          itemIds: [listItem.id],
+        });
       }
     }
-    return ids;
+    return map;
   }, [listItems]);
+
+  async function removeFromList(itemIds: string[]) {
+    if (!user) {
+      return;
+    }
+    await Promise.all(
+      itemIds.map((id) => listRepository.delete(user.userId, id)),
+    );
+  }
 
   function openCreate() {
     setEditing(null);
@@ -197,14 +222,22 @@ export default function CatalogScreen() {
           renderSectionHeader={({ section }) => (
             <Text style={styles.sectionHeader}>{section.title}</Text>
           )}
-          renderItem={({ item }) => (
-            <CatalogItemRow
-              item={item}
-              onEdit={() => openEdit(item)}
-              onAdd={() => setAddTarget(item)}
-              inList={inListIds.has(item.id)}
-            />
-          )}
+          renderItem={({ item }) => {
+            const entry = inList.get(item.id);
+            return (
+              <CatalogItemRow
+                item={item}
+                onEdit={() => openEdit(item)}
+                onAdd={() => setAddTarget(item)}
+                onRemove={() => {
+                  if (entry) {
+                    void removeFromList(entry.itemIds);
+                  }
+                }}
+                inListQuantity={entry ? entry.quantity : null}
+              />
+            );
+          }}
           stickySectionHeadersEnabled={false}
         />
       )}
@@ -328,8 +361,8 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderLeftColor: '#ece3d3',
   },
-  addToListDisabled: {
-    backgroundColor: '#f0ece2',
+  addToListInList: {
+    backgroundColor: '#e8ede0',
   },
   addToListGlyph: {
     fontSize: 26,
@@ -337,7 +370,7 @@ const styles = StyleSheet.create({
     color: '#8a5a14',
   },
   addToListGlyphInList: {
-    fontSize: 20,
-    color: '#7a8a5a',
+    fontSize: 15,
+    color: '#5f7a3f',
   },
 });
