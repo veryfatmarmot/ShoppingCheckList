@@ -149,7 +149,10 @@ write loss** because it breaks the app's primary use case outright:
 
 ## Snapshot Principle (Critical)
 - ListItem.itemData is a snapshot
-- It MUST NOT change if CatalogItem changes
+- It MUST NOT change if CatalogItem changes (catalog → list never propagates)
+- The reverse direction is allowed under one narrow, safe condition — see
+  "Edit → catalog propagation" below. This does not weaken the principle above:
+  a catalog edit still never touches a list item.
 
 ---
 
@@ -170,6 +173,24 @@ write loss** because it breaks the app's primary use case outright:
 ## Edit
 - Overwrite full document
 - updatedAt = now
+
+## Edit → catalog propagation
+- When editing a **catalog-linked** ListItem (`catalogItemId != null`) whose
+  `itemData` still **exactly equals** the linked CatalogItem's `itemData` (all
+  fields — the list item and its source are "in sync"), the same edit is also
+  written to the CatalogItem (full overwrite, newer `updatedAt`).
+- If they have already diverged (catalog edited independently, or the list item
+  edited before), the edit stays **list-only** — the catalog item is not touched.
+- `quantity` is never propagated (the CatalogItem has none); a quantity-only
+  edit leaves `itemData` unchanged, so no catalog write occurs.
+- If the linked CatalogItem is missing or soft-deleted, no propagation (a list
+  edit must not resurrect a deleted catalog item).
+- Automatic (no user toggle). The edit modal shows a small "catalog linked" hint
+  exactly when this propagation is in effect.
+- Rationale: propagating only when in sync means a user refining a fresh
+  list-from-catalog item also refines the reusable definition, while a
+  deliberately-diverged catalog item is never silently overwritten. Bounded to
+  one extra write; the Snapshot Principle (catalog → list) is unaffected.
 
 ## Buy (Complete)
 - Hard delete document

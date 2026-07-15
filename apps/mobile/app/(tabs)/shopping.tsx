@@ -1,5 +1,6 @@
-import { listRepository } from '@shopping-check-list/data';
+import { catalogRepository, listRepository } from '@shopping-check-list/data';
 import {
+  itemDataEquals,
   normalizeName,
   sectionItemsByGroup,
   type ListItem,
@@ -21,6 +22,7 @@ import {
 } from '../../components/ListItemFormModal';
 import { Snackbar } from '../../components/Snackbar';
 import { useAuthState } from '../../hooks/useAuthState';
+import { useCatalog } from '../../hooks/useCatalog';
 import { useGroups } from '../../hooks/useGroups';
 import { useList } from '../../hooks/useList';
 import { useShoppingUndo } from '../../hooks/useShoppingUndo';
@@ -60,11 +62,27 @@ export default function ShoppingScreen() {
   const { user } = useAuthState();
   const { items, loading: listLoading } = useList();
   const { groups, loading: groupsLoading } = useGroups();
+  const { items: catalogItems } = useCatalog();
   const [addVisible, setAddVisible] = useState(false);
   const [editing, setEditing] = useState<ListItem | null>(null);
   const { pending, remaining, markBought, undo } = useShoppingUndo(
     user?.userId,
   );
+
+  // When editing a catalog-linked item whose snapshot still matches its catalog
+  // source (in sync), the linked catalog item is exposed here so the edit can
+  // propagate to it. null when unlinked, diverged, or the catalog item is gone
+  // (soft-deleted items are absent from the active catalog, so no propagation).
+  const linkedInSyncCatalog = useMemo(() => {
+    if (!editing || editing.catalogItemId === null) {
+      return null;
+    }
+    const catalog = catalogItems.find((c) => c.id === editing.catalogItemId);
+    if (!catalog) {
+      return null;
+    }
+    return itemDataEquals(editing.itemData, catalog.itemData) ? catalog : null;
+  }, [editing, catalogItems]);
 
   const sections = useMemo(
     () =>
@@ -87,6 +105,7 @@ export default function ShoppingScreen() {
     note,
   }: ListItemFormValues) {
     const target = editing;
+    const linkedCatalog = linkedInSyncCatalog;
     closeForm();
     if (!user) {
       return;
@@ -112,6 +131,17 @@ export default function ShoppingScreen() {
           itemData,
         };
     await listRepository.set(user.userId, listItem);
+
+    // If this list item was in sync with its catalog source, propagate the
+    // shared-field changes to the catalog item too (quantity is list-only, so
+    // a quantity-only edit leaves itemData unchanged and skips this write).
+    if (linkedCatalog && !itemDataEquals(itemData, linkedCatalog.itemData)) {
+      await catalogRepository.set(user.userId, {
+        ...linkedCatalog,
+        itemData,
+        updatedAt: now,
+      });
+    }
   }
 
   return (
@@ -156,6 +186,7 @@ export default function ShoppingScreen() {
         initialGroupId={editing?.itemData.groupId ?? null}
         initialNote={editing?.itemData.note ?? ''}
         groups={groups}
+        catalogLinked={linkedInSyncCatalog !== null}
         onCancel={closeForm}
         onSubmit={handleSubmit}
       />

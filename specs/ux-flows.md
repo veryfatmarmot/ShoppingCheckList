@@ -200,6 +200,10 @@ It must align with:
 ## Behavior
 - overwrite full ListItem
 - updatedAt = now
+- If the item is catalog-linked and still in sync with its catalog item, the
+  edit also updates the catalog item (see `sync-rules.md` → "Edit → catalog
+  propagation"). A small "catalog linked" hint is shown at the bottom of the
+  modal exactly when this will happen.
 
 ---
 

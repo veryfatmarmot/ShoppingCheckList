@@ -129,6 +129,10 @@ Represents an item in the active shopping list.
 - When created from CatalogItem:
   - itemData is copied (snapshot)
   - future catalog changes DO NOT affect this ListItem
+- Reverse propagation (list → catalog) on edit: if a catalog-linked ListItem is
+  still in sync with its CatalogItem (itemData equal on all fields), editing the
+  ListItem also writes the same itemData to the CatalogItem. If diverged, the
+  edit is list-only. See `sync-rules.md` → "Edit → catalog propagation".
 
 ### Create (from catalog)
 - copy itemData from CatalogItem

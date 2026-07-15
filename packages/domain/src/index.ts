@@ -4,6 +4,7 @@ export type { Group } from './group';
 export type { ItemData } from './itemData';
 export type { ListItem } from './listItem';
 export { hasDuplicateCatalogName } from './hasDuplicateCatalogName';
+export { itemDataEquals } from './itemDataEquals';
 export { nextGroupOrder } from './nextGroupOrder';
 export { normalizeName } from './normalizeName';
 export { sectionItemsByGroup } from './sectionItemsByGroup';

@@ -30,6 +30,9 @@ interface ListItemFormModalProps {
   initialGroupId: string | null;
   initialNote: string;
   groups: Group[];
+  // True when saving will also update the linked catalog item (edit of an
+  // in-sync catalog-backed list item). Shown as a small hint.
+  catalogLinked?: boolean;
   onCancel: () => void;
   onSubmit: (values: ListItemFormValues) => void;
 }
@@ -46,6 +49,7 @@ export function ListItemFormModal({
   initialGroupId,
   initialNote,
   groups,
+  catalogLinked = false,
   onCancel,
   onSubmit,
 }: ListItemFormModalProps) {
@@ -139,6 +143,10 @@ export function ListItemFormModal({
               <Text style={styles.saveLabel}>Save</Text>
             </Pressable>
           </View>
+
+          {catalogLinked ? (
+            <Text style={styles.catalogLinked}>catalog linked</Text>
+          ) : null}
         </View>
       </View>
     </Modal>
@@ -213,5 +221,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#fffdf8',
+  },
+  catalogLinked: {
+    fontSize: 12,
+    color: '#a89e8c',
+    textAlign: 'center',
   },
 });
