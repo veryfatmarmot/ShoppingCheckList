@@ -173,19 +173,17 @@ export default function GroupsScreen() {
     });
   }
 
+  const addButton = (
+    <Pressable style={styles.addButton} onPress={openCreate}>
+      <Text style={styles.addLabel}>Add group</Text>
+    </Pressable>
+  );
+
   return (
     <View style={styles.container}>
-      <Pressable style={styles.addButton} onPress={openCreate}>
-        <Text style={styles.addLabel}>Add group</Text>
-      </Pressable>
-
       {loading ? (
         <View style={styles.centered}>
           <ActivityIndicator color="#8a5a14" />
-        </View>
-      ) : ordered.length === 0 ? (
-        <View style={styles.centered}>
-          <Text style={styles.empty}>No groups yet.</Text>
         </View>
       ) : (
         <ReorderableList
@@ -194,6 +192,14 @@ export default function GroupsScreen() {
           data={ordered}
           onReorder={handleReorder}
           keyExtractor={(group) => group.id}
+          // The add button lives inside the list so it scrolls away with the
+          // groups, saving header space.
+          ListHeaderComponent={addButton}
+          ListEmptyComponent={
+            <View style={styles.emptyBox}>
+              <Text style={styles.empty}>No groups yet.</Text>
+            </View>
+          }
           renderItem={({ item }) => <GroupRow group={item} onEdit={openEdit} />}
         />
       )}
@@ -226,7 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f4efe6',
   },
   addButton: {
-    margin: 16,
+    marginBottom: 6,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
@@ -243,6 +249,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
+  emptyBox: {
+    alignItems: 'center',
+    paddingTop: 56,
+  },
   empty: {
     fontSize: 16,
     color: '#6b6153',
@@ -251,6 +261,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
+    paddingTop: 16,
     paddingHorizontal: 16,
     paddingBottom: 16,
     gap: 6,

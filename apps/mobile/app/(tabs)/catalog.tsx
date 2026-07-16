@@ -233,19 +233,17 @@ export default function CatalogScreen() {
     });
   }
 
+  const addButton = (
+    <Pressable style={styles.addButton} onPress={() => openCreate(null)}>
+      <Text style={styles.addLabel}>Add item</Text>
+    </Pressable>
+  );
+
   return (
     <View style={styles.container}>
-      <Pressable style={styles.addButton} onPress={() => openCreate(null)}>
-        <Text style={styles.addLabel}>Add item</Text>
-      </Pressable>
-
       {catalogLoading || groupsLoading ? (
         <View style={styles.centered}>
           <ActivityIndicator color="#8a5a14" />
-        </View>
-      ) : items.length === 0 ? (
-        <View style={styles.centered}>
-          <Text style={styles.empty}>No catalog items yet.</Text>
         </View>
       ) : (
         <SectionList
@@ -253,6 +251,14 @@ export default function CatalogScreen() {
           contentContainerStyle={styles.listContent}
           sections={sections}
           keyExtractor={(item) => item.id}
+          // The add button lives inside the list so it scrolls away with the
+          // items, saving header space.
+          ListHeaderComponent={addButton}
+          ListEmptyComponent={
+            <View style={styles.emptyBox}>
+              <Text style={styles.empty}>No catalog items yet.</Text>
+            </View>
+          }
           renderSectionHeader={({ section }) => (
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionHeader}>{section.title}</Text>
@@ -329,7 +335,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f4efe6',
   },
   addButton: {
-    margin: 16,
+    marginBottom: 8,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
@@ -345,6 +351,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
+  },
+  emptyBox: {
+    alignItems: 'center',
+    paddingTop: 56,
   },
   empty: {
     fontSize: 16,
