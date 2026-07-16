@@ -30,12 +30,14 @@ import { useList } from '../../hooks/useList';
 function CatalogItemRow({
   item,
   onEdit,
+  onQuickAdd,
   onAdd,
   onRemove,
   inListQuantity,
 }: {
   item: CatalogItem;
   onEdit: () => void;
+  onQuickAdd: () => void;
   onAdd: () => void;
   onRemove: () => void;
   // Quantity currently on the shopping list, or null if not on the list.
@@ -51,23 +53,36 @@ function CatalogItemRow({
           <Text style={styles.rowNote}>{item.itemData.note}</Text>
         ) : null}
       </Pressable>
-      {/* Not on list: "+" opens the quantity modal. On list: shows a check with
-          the added quantity, and tapping removes it from the list (no popup). */}
-      <Pressable
-        style={[styles.addToList, inList && styles.addToListInList]}
-        onPress={inList ? onRemove : onAdd}
-        accessibilityLabel={
-          inList
-            ? `${item.itemData.name}: ${inListQuantity} on your list — tap to remove`
-            : `Add ${item.itemData.name} to shopping list`
-        }
-      >
-        <Text
-          style={[styles.addToListGlyph, inList && styles.addToListGlyphInList]}
+      {inList ? (
+        // On list: a check with the added quantity; tapping removes it (no popup).
+        <Pressable
+          style={[styles.addToList, styles.addToListInList]}
+          onPress={onRemove}
+          accessibilityLabel={`${item.itemData.name}: ${inListQuantity} on your list — tap to remove`}
         >
-          {inList ? `✓ ${inListQuantity}` : '+'}
-        </Text>
-      </Pressable>
+          <Text style={[styles.addToListGlyph, styles.addToListGlyphInList]}>
+            ✓ {inListQuantity}
+          </Text>
+        </Pressable>
+      ) : (
+        // Not on list: "+1" adds one immediately; "+" opens the quantity modal.
+        <>
+          <Pressable
+            style={styles.addToList}
+            onPress={onQuickAdd}
+            accessibilityLabel={`Add one ${item.itemData.name} to the shopping list`}
+          >
+            <Text style={styles.addToListGlyph}>+1</Text>
+          </Pressable>
+          <Pressable
+            style={styles.addToList}
+            onPress={onAdd}
+            accessibilityLabel={`Add ${item.itemData.name} to the shopping list with a chosen quantity`}
+          >
+            <Text style={styles.addToListGlyph}>+n</Text>
+          </Pressable>
+        </>
+      )}
     </View>
   );
 }
@@ -163,10 +178,8 @@ export default function CatalogScreen() {
     setModalVisible(false);
   }
 
-  async function addToList(quantity: number) {
-    const target = addTarget;
-    setAddTarget(null);
-    if (!user || !target) {
+  async function addItemToList(catalogItem: CatalogItem, quantity: number) {
+    if (!user) {
       return;
     }
     // ListItem is a snapshot: copy the catalog item's itemData at add time so
@@ -174,13 +187,28 @@ export default function CatalogScreen() {
     const now = Date.now();
     const listItem: ListItem = {
       id: randomUUID(),
-      catalogItemId: target.id,
+      catalogItemId: catalogItem.id,
       quantity,
       createdAt: now,
       updatedAt: now,
-      itemData: { ...target.itemData },
+      itemData: { ...catalogItem.itemData },
     };
     await listRepository.set(user.userId, listItem);
+  }
+
+  // "+" flow: quantity chosen in the modal.
+  async function addToList(quantity: number) {
+    const target = addTarget;
+    setAddTarget(null);
+    if (!target) {
+      return;
+    }
+    await addItemToList(target, quantity);
+  }
+
+  // "+1" flow: add a single unit straight away, no modal.
+  function quickAdd(item: CatalogItem) {
+    void addItemToList(item, 1);
   }
 
   async function confirmDelete() {
@@ -228,6 +256,7 @@ export default function CatalogScreen() {
               <CatalogItemRow
                 item={item}
                 onEdit={() => openEdit(item)}
+                onQuickAdd={() => quickAdd(item)}
                 onAdd={() => setAddTarget(item)}
                 onRemove={() => {
                   if (entry) {
@@ -365,7 +394,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e8ede0',
   },
   addToListGlyph: {
-    fontSize: 26,
+    fontSize: 19,
     fontWeight: '700',
     color: '#8a5a14',
   },
