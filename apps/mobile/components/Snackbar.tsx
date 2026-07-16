@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { colors } from '../theme';
+
 // Transient bottom bar with a single action (e.g. "Bought — Undo").
 export function Snackbar({
   message,
@@ -35,15 +37,18 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 12,
-    backgroundColor: '#1f1b16',
+    // Raised above the dark screen rather than darker than it — on a dark theme
+    // a near-black snackbar would sink into the background instead of standing
+    // out as a transient notice.
+    backgroundColor: colors.surfaceRaised,
   },
   message: {
     flex: 1,
-    color: '#fffdf8',
+    color: colors.textPrimary,
     fontSize: 15,
   },
   action: {
-    color: '#e7b667',
+    color: colors.accent,
     fontSize: 15,
     fontWeight: '700',
     textTransform: 'uppercase',

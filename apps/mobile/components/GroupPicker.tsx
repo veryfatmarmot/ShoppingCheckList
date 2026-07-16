@@ -1,6 +1,8 @@
 import type { Group } from '@shopping-check-list/domain';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { colors } from '../theme';
+
 // Chip picker for choosing a group (or "Ungrouped" → null). Shared by the
 // catalog and list item form modals.
 export function GroupPicker({
@@ -63,19 +65,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#d8cdbb',
-    backgroundColor: '#f4efe6',
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceSunken,
   },
   chipSelected: {
-    backgroundColor: '#8a5a14',
-    borderColor: '#8a5a14',
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
   },
   chipLabel: {
     fontSize: 14,
-    color: '#4d463d',
+    color: colors.textSecondary,
   },
   chipLabelSelected: {
-    color: '#fffdf8',
+    color: colors.onAccent,
     fontWeight: '600',
   },
 });

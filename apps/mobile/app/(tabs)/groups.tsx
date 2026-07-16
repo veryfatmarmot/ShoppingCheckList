@@ -27,6 +27,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { GroupFormModal } from '../../components/GroupFormModal';
 import { useAuthState } from '../../hooks/useAuthState';
 import { useGroups } from '../../hooks/useGroups';
+import { colors } from '../../theme';
 
 function GroupRow({
   group,
@@ -183,7 +184,7 @@ export default function GroupsScreen() {
     <View style={styles.container}>
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator color="#8a5a14" />
+          <ActivityIndicator color={colors.accent} />
         </View>
       ) : (
         <ReorderableList
@@ -229,19 +230,22 @@ export default function GroupsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f4efe6',
+    backgroundColor: colors.background,
   },
+  // Outlined "ghost" pill rather than a solid fill: it sits inside the list, so
+  // a solid accent block would outweigh the groups it scrolls with.
   addButton: {
     marginBottom: 6,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 999,
     alignItems: 'center',
-    backgroundColor: '#8a5a14',
+    borderWidth: 1,
+    borderColor: colors.accent,
   },
   addLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fffdf8',
+    color: colors.accent,
   },
   centered: {
     flex: 1,
@@ -255,10 +259,11 @@ const styles = StyleSheet.create({
   },
   empty: {
     fontSize: 16,
-    color: '#6b6153',
+    color: colors.textMuted,
   },
   list: {
     flex: 1,
+    backgroundColor: colors.background,
   },
   listContent: {
     paddingTop: 16,
@@ -270,9 +275,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'stretch',
     borderRadius: 10,
-    backgroundColor: '#fffdf8',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#d8cdbb',
+    borderColor: colors.border,
     overflow: 'hidden',
   },
   rowMain: {
@@ -284,17 +289,17 @@ const styles = StyleSheet.create({
   rowName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1f1b16',
+    color: colors.textPrimary,
   },
   handle: {
     paddingHorizontal: 18,
     justifyContent: 'center',
     alignItems: 'center',
     borderLeftWidth: 1,
-    borderLeftColor: '#ece3d3',
+    borderLeftColor: colors.divider,
   },
   handleGlyph: {
     fontSize: 22,
-    color: '#b3a892',
+    color: colors.textFaint,
   },
 });

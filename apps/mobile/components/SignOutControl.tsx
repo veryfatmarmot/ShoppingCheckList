@@ -2,6 +2,8 @@ import { signOutUser } from '@shopping-check-list/data';
 import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { colors } from '../theme';
+
 // Shared-header sign-out (M1-T6): a header button that opens a confirmation
 // dialog, then signs out. The root layout's auth guard handles the redirect
 // back to the login screen once the user becomes null. A react-native Modal
@@ -64,14 +66,14 @@ const styles = StyleSheet.create({
   headerButtonLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#8a5a14',
+    color: colors.accent,
   },
   backdrop: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: 'rgba(31, 27, 22, 0.4)',
+    backgroundColor: colors.backdrop,
   },
   dialog: {
     width: '100%',
@@ -79,17 +81,17 @@ const styles = StyleSheet.create({
     padding: 24,
     borderRadius: 16,
     gap: 12,
-    backgroundColor: '#fffdf8',
+    backgroundColor: colors.surface,
   },
   dialogTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f1b16',
+    color: colors.textPrimary,
   },
   dialogBody: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#4d463d',
+    color: colors.textSecondary,
   },
   dialogButtons: {
     flexDirection: 'row',
@@ -105,14 +107,14 @@ const styles = StyleSheet.create({
   dialogCancelLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6b6153',
+    color: colors.textMuted,
   },
   dialogConfirm: {
-    backgroundColor: '#a4262c',
+    backgroundColor: colors.danger,
   },
   dialogConfirmLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#fffdf8',
+    color: colors.onDanger,
   },
 });

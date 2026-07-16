@@ -1,5 +1,7 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { colors } from '../theme';
+
 interface ConfirmDialogProps {
   visible: boolean;
   title: string;
@@ -43,7 +45,14 @@ export function ConfirmDialog({
               ]}
               onPress={onConfirm}
             >
-              <Text style={styles.confirmLabel}>{confirmLabel}</Text>
+              <Text
+                style={[
+                  styles.confirmLabel,
+                  destructive && styles.confirmLabelDestructive,
+                ]}
+              >
+                {confirmLabel}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -58,7 +67,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: 'rgba(31, 27, 22, 0.4)',
+    backgroundColor: colors.backdrop,
   },
   dialog: {
     width: '100%',
@@ -66,17 +75,17 @@ const styles = StyleSheet.create({
     padding: 24,
     borderRadius: 16,
     gap: 12,
-    backgroundColor: '#fffdf8',
+    backgroundColor: colors.surface,
   },
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f1b16',
+    color: colors.textPrimary,
   },
   message: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#4d463d',
+    color: colors.textSecondary,
   },
   buttons: {
     flexDirection: 'row',
@@ -92,17 +101,20 @@ const styles = StyleSheet.create({
   cancelLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6b6153',
+    color: colors.textMuted,
   },
   confirm: {
-    backgroundColor: '#8a5a14',
+    backgroundColor: colors.accent,
   },
   confirmDestructive: {
-    backgroundColor: '#a4262c',
+    backgroundColor: colors.danger,
   },
   confirmLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#fffdf8',
+    color: colors.onAccent,
+  },
+  confirmLabelDestructive: {
+    color: colors.onDanger,
   },
 });

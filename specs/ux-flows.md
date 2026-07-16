@@ -250,6 +250,21 @@ It must align with:
 
 # Global UX Rules
 
+## Visual Theme
+- The app is dark-themed throughout: charcoal surfaces, a single mint accent,
+  light text. There is no light mode and no runtime theme switching.
+- **All colors come from `apps/mobile/theme.ts`.** Screens and components must
+  never hardcode a color literal — the palette is retuned in that one file.
+- **Mint (`accent`) is the only positive/interactive accent**: add buttons,
+  checkboxes, quantities, section headers, active tab, snackbar action.
+- **Coral (`danger`) is reserved for destructive actions and errors** — Delete
+  buttons, the sign-out confirm, validation errors. It must not be used
+  decoratively; users read it as "this removes something".
+- Chrome (header, tab bar) is themed explicitly in `app/(tabs)/_layout.tsx`;
+  React Navigation defaults to light chrome and would otherwise stay white.
+- One-time list items are distinguished by a lighter neutral surface
+  (`surfaceAlt`), never by coral — being one-time is not a warning.
+
 ## Group Handling
 - null or missing group → Ungrouped
 

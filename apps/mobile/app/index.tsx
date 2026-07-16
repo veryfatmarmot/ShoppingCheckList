@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
 import {
   ActivityIndicator,
   Pressable,
@@ -8,6 +7,7 @@ import {
 } from 'react-native';
 
 import { useGoogleSignIn } from '../hooks/useGoogleSignIn';
+import { colors } from '../theme';
 
 // Login screen. The root layout's auth guard only routes here while signed
 // out; once sign-in succeeds, onAuthStateChanged flips the guard and the user
@@ -21,7 +21,7 @@ export default function LoginScreen() {
         <Text style={styles.eyebrow}>Shopping Check List</Text>
         <Text style={styles.title}>Sign in</Text>
         {inProgress ? (
-          <ActivityIndicator />
+          <ActivityIndicator color={colors.accent} />
         ) : (
           <Pressable
             style={[styles.button, !canSignIn && styles.buttonDisabled]}
@@ -33,7 +33,6 @@ export default function LoginScreen() {
         )}
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
-      <StatusBar style="dark" />
     </View>
   );
 }
@@ -44,16 +43,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: '#f4efe6',
+    backgroundColor: colors.background,
   },
   card: {
     width: '100%',
     maxWidth: 420,
     padding: 24,
     borderRadius: 20,
-    backgroundColor: '#fffdf8',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#d8cdbb',
+    borderColor: colors.border,
     gap: 12,
   },
   eyebrow: {
@@ -61,21 +60,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    color: '#8a5a14',
+    color: colors.accent,
   },
   title: {
     fontSize: 30,
     lineHeight: 36,
     fontWeight: '700',
-    color: '#1f1b16',
+    color: colors.textPrimary,
   },
+  // The one solid accent fill in the app: this is the single action on the
+  // screen, so it should carry full weight.
   button: {
     marginTop: 4,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 12,
     alignItems: 'center',
-    backgroundColor: '#8a5a14',
+    backgroundColor: colors.accent,
   },
   buttonDisabled: {
     opacity: 0.5,
@@ -83,11 +84,11 @@ const styles = StyleSheet.create({
   buttonLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fffdf8',
+    color: colors.onAccent,
   },
   error: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#a4262c',
+    color: colors.danger,
   },
 });

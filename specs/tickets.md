@@ -250,6 +250,15 @@ Each ticket must be:
 ## M6-T6 UX Polish
 - Improve responsiveness
 - Fix edge cases
+- Includes the dark restyle: `apps/mobile/theme.ts` holds every color as a
+  semantic token (127 hardcoded literals across 15 files were removed), and the
+  palette moved to charcoal + mint with coral reserved for destructive actions.
+  See `ux-flows.md` → Global UX Rules → Visual Theme. Styling only — no domain,
+  data, or dependency changes.
+- Explicitly NOT included (rejected as out of scope for a restyle): per-category
+  line icons. Those need an icon library (a new dependency) plus a `Group.icon`
+  field, an icon picker, and domain-model changes — a feature, not polish. Park
+  it for post-MVP if wanted.
 
 ## M6-T7 Backlog Prep
 - Prepare next phase features
@@ -282,6 +291,10 @@ real-world test — that is the known trade, not a surprise.
 
 ## R1-T3 Branding
 - Home-screen display name "Refillio" (public product name), proper icon and splash
+- The current `assets/icon.png` predates the dark restyle (M6-T6): it is
+  light-blue and still has construction guide lines baked in. It now sits on a
+  `#2b2b2b` splash and adaptive-icon background, so it needs replacing with
+  artwork drawn for the dark theme — not just a re-crop.
 
 ---
 

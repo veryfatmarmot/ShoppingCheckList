@@ -9,6 +9,8 @@ import {
   View,
 } from 'react-native';
 
+import { colors } from '../theme';
+
 interface GroupFormModalProps {
   visible: boolean;
   title: string;
@@ -56,7 +58,7 @@ export function GroupFormModal({
             value={name}
             onChangeText={setName}
             placeholder="Group name"
-            placeholderTextColor="#a89e8c"
+            placeholderTextColor={colors.textFaint}
             autoFocus
             returnKeyType="done"
             onSubmitEditing={() => {
@@ -102,7 +104,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: 'rgba(31, 27, 22, 0.4)',
+    backgroundColor: colors.backdrop,
   },
   dialog: {
     width: '100%',
@@ -110,22 +112,22 @@ const styles = StyleSheet.create({
     padding: 24,
     borderRadius: 16,
     gap: 16,
-    backgroundColor: '#fffdf8',
+    backgroundColor: colors.surface,
   },
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f1b16',
+    color: colors.textPrimary,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#d8cdbb',
+    borderColor: colors.border,
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 12,
     fontSize: 16,
-    color: '#1f1b16',
-    backgroundColor: '#f4efe6',
+    color: colors.textPrimary,
+    backgroundColor: colors.surfaceSunken,
   },
   buttons: {
     flexDirection: 'row',
@@ -144,15 +146,15 @@ const styles = StyleSheet.create({
   cancelLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6b6153',
+    color: colors.textMuted,
   },
   deleteLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#a4262c',
+    color: colors.danger,
   },
   save: {
-    backgroundColor: '#8a5a14',
+    backgroundColor: colors.accent,
   },
   saveDisabled: {
     opacity: 0.5,
@@ -160,6 +162,6 @@ const styles = StyleSheet.create({
   saveLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#fffdf8',
+    color: colors.onAccent,
   },
 });

@@ -26,6 +26,7 @@ import { useAuthState } from '../../hooks/useAuthState';
 import { useCatalog } from '../../hooks/useCatalog';
 import { useGroups } from '../../hooks/useGroups';
 import { useList } from '../../hooks/useList';
+import { colors } from '../../theme';
 
 function CatalogItemRow({
   item,
@@ -243,7 +244,7 @@ export default function CatalogScreen() {
     <View style={styles.container}>
       {catalogLoading || groupsLoading ? (
         <View style={styles.centered}>
-          <ActivityIndicator color="#8a5a14" />
+          <ActivityIndicator color={colors.accent} />
         </View>
       ) : (
         <SectionList
@@ -332,19 +333,22 @@ export default function CatalogScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f4efe6',
+    backgroundColor: colors.background,
   },
+  // Outlined "ghost" pill rather than a solid fill: it sits inside the list, so
+  // a solid accent block would outweigh the items it scrolls with.
   addButton: {
     marginBottom: 8,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 999,
     alignItems: 'center',
-    backgroundColor: '#8a5a14',
+    borderWidth: 1,
+    borderColor: colors.accent,
   },
   addLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fffdf8',
+    color: colors.accent,
   },
   centered: {
     flex: 1,
@@ -358,11 +362,11 @@ const styles = StyleSheet.create({
   },
   empty: {
     fontSize: 16,
-    color: '#6b6153',
+    color: colors.textMuted,
   },
   list: {
     flex: 1,
-    backgroundColor: '#f4efe6',
+    backgroundColor: colors.background,
   },
   listContent: {
     padding: 16,
@@ -379,7 +383,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    color: '#8a5a14',
+    color: colors.accent,
   },
   sectionAdd: {
     paddingHorizontal: 8,
@@ -387,15 +391,15 @@ const styles = StyleSheet.create({
   sectionAddGlyph: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#8a5a14',
+    color: colors.accent,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 10,
-    backgroundColor: '#fffdf8',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#d8cdbb',
+    borderColor: colors.border,
     marginBottom: 6,
     overflow: 'hidden',
   },
@@ -413,11 +417,11 @@ const styles = StyleSheet.create({
   rowName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1f1b16',
+    color: colors.textPrimary,
   },
   rowNote: {
     fontSize: 14,
-    color: '#6b6153',
+    color: colors.textMuted,
     flexShrink: 0,
     marginLeft: 'auto',
     textAlign: 'right',
@@ -427,18 +431,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 14,
     borderLeftWidth: 1,
-    borderLeftColor: '#ece3d3',
+    borderLeftColor: colors.divider,
   },
   addToListInList: {
-    backgroundColor: '#e8ede0',
+    backgroundColor: colors.accentSurface,
   },
   addToListGlyph: {
     fontSize: 19,
     fontWeight: '700',
-    color: '#8a5a14',
+    color: colors.accent,
   },
   addToListGlyphInList: {
     fontSize: 15,
-    color: '#5f7a3f',
+    color: colors.accent,
   },
 });

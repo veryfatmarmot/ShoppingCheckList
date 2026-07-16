@@ -15,6 +15,8 @@ import {
   View,
 } from 'react-native';
 
+import { colors } from '../theme';
+
 import { GroupPicker } from './GroupPicker';
 
 export interface CatalogItemFormValues {
@@ -96,7 +98,7 @@ export function CatalogItemFormModal({
             value={name}
             onChangeText={setName}
             placeholder="Item name"
-            placeholderTextColor="#a89e8c"
+            placeholderTextColor={colors.textFaint}
             autoFocus
           />
           {isDuplicate ? (
@@ -110,7 +112,7 @@ export function CatalogItemFormModal({
             value={note}
             onChangeText={setNote}
             placeholder="Note (optional)"
-            placeholderTextColor="#a89e8c"
+            placeholderTextColor={colors.textFaint}
             multiline
           />
 
@@ -158,7 +160,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: 'rgba(31, 27, 22, 0.4)',
+    backgroundColor: colors.backdrop,
   },
   dialog: {
     width: '100%',
@@ -166,22 +168,22 @@ const styles = StyleSheet.create({
     padding: 24,
     borderRadius: 16,
     gap: 12,
-    backgroundColor: '#fffdf8',
+    backgroundColor: colors.surface,
   },
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1f1b16',
+    color: colors.textPrimary,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#d8cdbb',
+    borderColor: colors.border,
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 12,
     fontSize: 16,
-    color: '#1f1b16',
-    backgroundColor: '#f4efe6',
+    color: colors.textPrimary,
+    backgroundColor: colors.surfaceSunken,
   },
   noteInput: {
     minHeight: 64,
@@ -190,14 +192,14 @@ const styles = StyleSheet.create({
   error: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#a4262c',
+    color: colors.danger,
   },
   label: {
     fontSize: 13,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    color: '#8a5a14',
+    color: colors.accent,
   },
   buttons: {
     flexDirection: 'row',
@@ -217,15 +219,15 @@ const styles = StyleSheet.create({
   cancelLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#6b6153',
+    color: colors.textMuted,
   },
   deleteLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#a4262c',
+    color: colors.danger,
   },
   save: {
-    backgroundColor: '#8a5a14',
+    backgroundColor: colors.accent,
   },
   saveDisabled: {
     opacity: 0.5,
@@ -233,6 +235,6 @@ const styles = StyleSheet.create({
   saveLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#fffdf8',
+    color: colors.onAccent,
   },
 });

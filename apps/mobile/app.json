@@ -5,11 +5,12 @@
     "version": "0.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#2b2b2b",
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#E6F4FE"
+      "backgroundColor": "#2b2b2b"
     },
     "ios": {
       "supportsTablet": true,
@@ -19,7 +20,7 @@
       "package": "dev.marmot.shoppingchecklist",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#E6F4FE"
+        "backgroundColor": "#2b2b2b"
       },
       "predictiveBackGestureEnabled": false
     },

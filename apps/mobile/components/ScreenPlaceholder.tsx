@@ -1,5 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { colors } from '../theme';
+
 // Temporary body for the tab screens created in M1-T3. Each tab's real
 // content arrives in later milestones (Groups M2, Catalog M3, Shopping M4).
 export function ScreenPlaceholder({ note }: { note: string }) {
@@ -16,12 +18,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: '#f4efe6',
+    backgroundColor: colors.background,
   },
   note: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#4d463d',
+    color: colors.textSecondary,
     textAlign: 'center',
   },
 });
