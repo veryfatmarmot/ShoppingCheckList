@@ -83,7 +83,12 @@ function ShoppingListRow({
           <Text style={styles.rowNote}>{item.itemData.note}</Text>
         ) : null}
       </Pressable>
-      <Text style={styles.rowQty}>×{item.quantity}</Text>
+      {/* A quantity of 1 means "no count given" and is left off the row. The
+          test is `!== 1`, not `> 1`: fractional amounts like 0.5 are explicit
+          counts and must stay visible. */}
+      {item.quantity !== 1 ? (
+        <Text style={styles.rowQty}>{item.quantity}</Text>
+      ) : null}
       {/* Mark-bought on the right — easier thumb reach, and consistent with the
           catalog's right-side action control. */}
       <Pressable

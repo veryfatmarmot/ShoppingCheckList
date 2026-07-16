@@ -61,8 +61,10 @@ function CatalogItemRow({
           onPress={onRemove}
           accessibilityLabel={`${item.itemData.name}: ${inListQuantity} on your list — tap to remove`}
         >
+          {/* Same rule as the shopping row: 1 means "no count given", so only
+              an explicit amount is shown next to the check. */}
           <Text style={[styles.addToListGlyph, styles.addToListGlyphInList]}>
-            ✓ {inListQuantity}
+            {inListQuantity !== 1 ? `✓ ${inListQuantity}` : '✓'}
           </Text>
         </Pressable>
       ) : (

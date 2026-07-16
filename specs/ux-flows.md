@@ -72,7 +72,7 @@ It must align with:
 
 ## Item Row
 - name
-- quantity
+- quantity — rendered **only when it is not 1** (see Global UX Rules → Quantity)
 - note (secondary line, only if non-empty)
 - checkbox (mark bought)
 - one-time items (no catalog reference, `catalogItemId == null`) are shown with a distinct row background color rather than a text label
@@ -165,13 +165,13 @@ It must align with:
 
 ## Fields
 - name
-- quantity
+- quantity (optional — blank means "no count", stored as 1)
 - group
 - note
 
 ## Behavior
 - validate name (non-empty)
-- validate quantity (> 0)
+- validate quantity (> 0) when one is entered; blank is valid and means 1
 - on confirm:
   - create ListItem with catalogItemId = null
 
@@ -195,7 +195,8 @@ It must align with:
 - name
 - group
 - note
-- quantity
+- quantity (optional — blank means "no count", stored as 1; an item whose
+  quantity is 1 opens with the field blank rather than a literal "1")
 
 ## Behavior
 - overwrite full ListItem
@@ -274,6 +275,25 @@ It must align with:
 ## Duplicate Handling
 - prevent in UI if possible
 - tolerate if exists
+
+## Quantity
+- `quantity` stays a required number (> 0) in the domain and in Firestore rules.
+  There is no "null quantity" — **1 is the stored representation of "no count
+  given"**, because adding an item usually means "I need this", not "I need
+  precisely one".
+- A quantity of 1 is therefore **not rendered**: the Shopping row shows just the
+  name, and the Catalog in-list control shows a bare `✓`.
+- When shown, the Shopping row renders the bare number (`3`, `0.5`) with no `×`
+  prefix. The Catalog in-list control renders it after the check (`✓ 3`).
+- The test is **`!== 1`, never `> 1`** — quantity may be fractional, and an
+  explicit `0.5` is a real count that must stay visible.
+- Quantity inputs treat blank as 1, so "add without a count" is simply not
+  filling the field in. The catalog's `+1` control is the same thing in one tap.
+- Consequence, accepted: a deliberate "exactly 1" is indistinguishable from "no
+  count". That ambiguity is intended — showing `×1` on every row was the noise
+  this rule removes. Revisit only if real use shows the distinction matters (it
+  would need `quantity: number | null`, a Firestore rules change + deploy, and a
+  null branch in the catalog's in-list aggregation).
 
 ## Note Display
 - shown as a secondary line under the item name in both Shopping List and Catalog rows

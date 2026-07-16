@@ -63,17 +63,18 @@ export function ListItemFormModal({
   useEffect(() => {
     if (visible) {
       setName(initialName);
-      setQuantityText(String(initialQuantity));
+      // 1 means "no count given", which the row renders bare — so show the
+      // field blank rather than a literal "1" the user never typed.
+      setQuantityText(initialQuantity === 1 ? '' : String(initialQuantity));
       setGroupId(initialGroupId);
       setNote(initialNote);
     }
   }, [visible, initialName, initialQuantity, initialGroupId, initialNote]);
 
-  const quantity = Number(quantityText);
+  // Quantity is optional: leaving it blank means "no count", stored as 1.
+  const quantity = quantityText.trim() === '' ? 1 : Number(quantityText);
   const quantityValid =
-    quantityText.trim() !== '' &&
-    Number.isFinite(quantity) &&
-    validateQuantity(quantity) === null;
+    Number.isFinite(quantity) && validateQuantity(quantity) === null;
   const canSave = validateName(name) === null && quantityValid;
 
   function submit() {
@@ -102,7 +103,7 @@ export function ListItemFormModal({
             autoFocus
           />
 
-          <Text style={styles.label}>Quantity</Text>
+          <Text style={styles.label}>Quantity (optional)</Text>
           <TextInput
             style={styles.input}
             value={quantityText}
