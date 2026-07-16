@@ -96,11 +96,16 @@ export default function CatalogScreen() {
   const [editing, setEditing] = useState<CatalogItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<CatalogItem | null>(null);
   const [addTarget, setAddTarget] = useState<CatalogItem | null>(null);
+  // Group pre-selected when creating (set by a section's "+"); null = Ungrouped.
+  const [createGroupId, setCreateGroupId] = useState<string | null>(null);
 
   const sections = useMemo(
     () =>
       sectionItemsByGroup(items, groups).map((section) => ({
         title: section.group?.name ?? 'Ungrouped',
+        // Carried so a section's "+" can pre-select that group on create
+        // (null = Ungrouped).
+        groupId: section.group?.id ?? null,
         data: section.items,
       })),
     [items, groups],
@@ -137,8 +142,9 @@ export default function CatalogScreen() {
     );
   }
 
-  function openCreate() {
+  function openCreate(groupId: string | null) {
     setEditing(null);
+    setCreateGroupId(groupId);
     setModalVisible(true);
   }
 
@@ -229,7 +235,7 @@ export default function CatalogScreen() {
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.addButton} onPress={openCreate}>
+      <Pressable style={styles.addButton} onPress={() => openCreate(null)}>
         <Text style={styles.addLabel}>Add item</Text>
       </Pressable>
 
@@ -248,7 +254,17 @@ export default function CatalogScreen() {
           sections={sections}
           keyExtractor={(item) => item.id}
           renderSectionHeader={({ section }) => (
-            <Text style={styles.sectionHeader}>{section.title}</Text>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionHeader}>{section.title}</Text>
+              <Pressable
+                style={styles.sectionAdd}
+                onPress={() => openCreate(section.groupId)}
+                hitSlop={8}
+                accessibilityLabel={`Add a catalog item to ${section.title}`}
+              >
+                <Text style={styles.sectionAddGlyph}>+</Text>
+              </Pressable>
+            </View>
           )}
           renderItem={({ item }) => {
             const entry = inList.get(item.id);
@@ -276,7 +292,7 @@ export default function CatalogScreen() {
         title={editing ? 'Edit item' : 'Add item'}
         initialName={editing?.itemData.name ?? ''}
         initialNote={editing?.itemData.note ?? ''}
-        initialGroupId={editing?.itemData.groupId ?? null}
+        initialGroupId={editing ? editing.itemData.groupId : createGroupId}
         groups={groups}
         existingItems={items}
         editingId={editing?.id}
@@ -341,14 +357,27 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 16,
   },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    marginBottom: 8,
+  },
   sectionHeader: {
     fontSize: 13,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
     color: '#8a5a14',
-    marginTop: 16,
-    marginBottom: 8,
+  },
+  sectionAdd: {
+    paddingHorizontal: 8,
+  },
+  sectionAddGlyph: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#8a5a14',
   },
   row: {
     flexDirection: 'row',
