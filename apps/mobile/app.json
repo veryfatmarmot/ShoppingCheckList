@@ -28,7 +28,11 @@
       "favicon": "./assets/icon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-router", "expo-web-browser"],
+    "plugins": [
+      "expo-router",
+      "expo-web-browser",
+      "./plugins/withReleaseSigning"
+    ],
     "scheme": ["shoppingchecklist", "dev.marmot.shoppingchecklist"]
   }
 }
