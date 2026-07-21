@@ -18,7 +18,7 @@ export default function LoginScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.card}>
-        <Text style={styles.eyebrow}>Shopping Check List</Text>
+        <Text style={styles.eyebrow}>Refillio</Text>
         <Text style={styles.title}>Sign in</Text>
         {inProgress ? (
           <ActivityIndicator color={colors.accent} />

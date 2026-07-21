@@ -8,7 +8,7 @@ import { colors } from '../theme';
 export function LoadingScreen() {
   return (
     <View style={styles.screen}>
-      <Text style={styles.eyebrow}>Shopping Check List</Text>
+      <Text style={styles.eyebrow}>Refillio</Text>
       <ActivityIndicator color={colors.accent} />
     </View>
   );
