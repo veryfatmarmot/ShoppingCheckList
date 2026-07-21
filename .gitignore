@@ -4,6 +4,7 @@ node_modules/
 .expo/
 .android-home/
 dist/
+bin/
 web-build/
 .DS_Store
 .env
