@@ -299,6 +299,15 @@ real-world test — that is the known trade, not a surprise.
 - Expo web export deployed to Firebase Hosting
 - Add the hosting origin to the Web OAuth client's authorized JavaScript origins and redirect URIs
 
+### Implementation notes (done — live at https://shoppingchecklist-62209.web.app)
+- **`app.json` `web.output: "single"`** — a single-page app (one `index.html`, client-side routing). Simplest and most reliable for this app's Expo Router auth guards + client-only Firebase; avoids static per-route pre-render, which would try to render authed routes at build time.
+- **`firebase.json` `hosting`** block: `public: "apps/mobile/dist"` (relative to repo root, where `firebase.json` lives), with a catch-all rewrite `** -> /index.html` for SPA routing.
+- **Build + deploy:** `cd apps/mobile && npx expo export --platform web` (outputs to `dist/`), then `npx firebase-tools@latest deploy --only hosting`. No local firebase-tools; runs via npx. Owner is logged in as dev.marmot@gmail.com; project `shoppingchecklist-62209` from `.firebaserc`.
+- **Metro monorepo fix interaction (important):** the R1-T1 `metro.config.js` server-root pin is scoped to `export:embed` (Android native bundling) ONLY. The web exporter (`expo export`) auto-resolves its own entry and needs the DEFAULT repo-root server root to find the hoisted `expo-router/entry`; an earlier broader `export` match broke web export with "Unable to resolve module ./node_modules/expo-router/entry.js". Do not widen that condition back to plain `export`.
+- **OAuth (blocking, owner did in Google Cloud Console):** added `https://shoppingchecklist-62209.web.app` to the Web OAuth client's **Authorized JavaScript origins**, and both `…web.app` and `…web.app/` to **Authorized redirect URIs**. Without this, web sign-in fails with `Error 400: redirect_uri_mismatch`. The alternate Firebase domain `https://shoppingchecklist-62209.firebaseapp.com` serves the same site; add it too if ever used. Firebase Hosting auto-authorizes these domains for Firebase Auth, so no separate Auth "authorized domains" step was needed.
+- **"For us" vs "for everybody":** hosting is public either way. Who can sign in is governed by the OAuth consent screen: Testing mode = only added test users (family) can sign in; Production = anyone. Same deployment for both — flip the consent screen to go public. Per-user Firestore rules keep data isolated regardless.
+- **Redeploy after any web change:** re-run the export + `firebase deploy --only hosting`.
+
 ## R1-T3 Branding
 - Home-screen display name "Refillio" (public product name), proper icon and splash
 - The current `assets/icon.png` predates the dark restyle (M6-T6): it is
