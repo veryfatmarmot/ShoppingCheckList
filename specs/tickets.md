@@ -310,10 +310,26 @@ real-world test — that is the known trade, not a surprise.
 
 ## R1-T3 Branding
 - Home-screen display name "Refillio" (public product name), proper icon and splash
-- The current `assets/icon.png` predates the dark restyle (M6-T6): it is
-  light-blue and still has construction guide lines baked in. It now sits on a
-  `#2b2b2b` splash and adaptive-icon background, so it needs replacing with
-  artwork drawn for the dark theme — not just a re-crop.
+
+### Implementation notes (done)
+- **Name "Refillio"** in `app.json` `name` (drives Android launcher label, web page
+  title, PWA manifest name) and in the login + loading screens (`app/index.tsx`,
+  `components/LoadingScreen.tsx`).
+- **Icon** — owner-supplied green house/checklist/`+` artwork at repo-root
+  `assets/icon.png` (full-bleed) and `assets/icon_circle.png` (circle
+  composition). Processed with `jimp-compact` into `apps/mobile/assets/icon.png`
+  and wired to `icon`, `adaptiveIcon.foregroundImage` (bg `#30b348`), splash, and
+  web favicon. Sized so a launcher circle mask shows the full logo with margin
+  (matched to `icon_circle.png` via a mask simulation before building). No image
+  library is added — `jimp-compact` ships transitively via `@expo/image-utils`.
+- **OAuth consent screen** (Google Cloud Console → Google Auth Platform →
+  Branding): app name "Refillio", logo, support email — so Google sign-in shows
+  "Refillio wants to access…" rather than the project ID. Logo prepared at
+  `C:\Users\bonda\refillio-logo.png` (512×512).
+- **Test users** (consent screen → Audience): family Google accounts added so
+  they can sign in on both the APK and the web app while the app stays in
+  Testing mode (no Google verification needed for basic email/profile scopes).
+  Publishing to Production (anyone can sign in) is a later, optional step.
 
 ---
 
