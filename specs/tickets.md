@@ -331,6 +331,16 @@ real-world test — that is the known trade, not a surprise.
   Testing mode (no Google verification needed for basic email/profile scopes).
   Publishing to Production (anyone can sign in) is a later, optional step.
 
+## R1-T4 Swipe between tabs (mobile) — done
+- Swipe horizontally between Shopping / Catalog / Groups on phones; **web stays tap-only** (no swipe), by design.
+
+### Implementation notes (done)
+- **`apps/mobile/app/(tabs)/_layout.tsx`** — native uses `@react-navigation/material-top-tabs` (a `react-native-pager-view` pager) via `withLayoutContext`, positioned at the bottom (`tabBarPosition="bottom"`) so it keeps the bottom-bar UX. Material Top Tabs has no header, so a small custom **"Refillio"** header is rendered above it (Sign-out on the right; drops its safe-area inset when the offline banner is showing). **Web** branches on `Platform.OS === 'web'` to the unchanged tap-only Expo Router `Tabs` (with its built-in header).
+- **Active-tab highlight** — a filled accent **pill** (`tabBarIndicatorStyle` sized to a rounded rect + `tabBarIndicatorContainerStyle` inset) that slides under the current tab as you swipe, instead of the thin default edge line.
+- **Reorder-gesture coordination** (Groups) — the reorder pan is `Gesture.Pan().activeOffsetY([-12, 12])` (via `ReorderableList`'s `panGesture`), so a horizontal swipe never engages the reorder and flows to the pager, while a vertical drag on the handle reorders. `failOffsetX` was tried and rejected (fails the drag on sideways jitter; corrupts drag-direction tracking).
+- **New deps:** `react-native-pager-view`, `@react-navigation/material-top-tabs` (native → needs a rebuild/reinstall of the APK).
+- **Known caveat (deferred to P1-T2):** the Groups drag-reorder **autoscroll is disabled** (`autoscrollSpeedScale={0}`) because `react-native-reorderable-list` mis-behaves inside the pager on Reanimated 4. Reordering works within the on-screen area; for a long list, scroll first, then drag.
+
 ---
 
 # Post-MVP — Hardening
@@ -344,6 +354,27 @@ Not part of MVP scope. Do not start until M0–M6 are complete and the MVP is ot
 - The project already runs as a custom dev-client build (moved off Expo Go at M1-T1), so this is a dependency/implementation swap with no new build infrastructure
 - Resolves the known offline-persistence gap documented in `sync-rules.md` ("Known MVP Limitation — Mobile Offline Persistence")
 - Project is not considered production-ready until this ticket is complete
+
+## P1-T2 Restore Groups reorder autoscroll under the swipe pager
+
+**Context:** swipe-between-tabs shipped in **R1-T4**. Its one caveat: the Groups
+drag-reorder **autoscroll is disabled** as a stopgap (`autoscrollSpeedScale={0}`
+in `groups.tsx`), so reordering only works within the on-screen area — for a
+long list, scroll first, then drag. This ticket is to restore proper
+edge-autoscroll.
+
+### The bug (why autoscroll is disabled)
+`react-native-reorderable-list@0.18.1` (latest; peer `react-native-reanimated >=3.12.0`) does **not** work correctly inside the pager on **Reanimated 4.1.7**. Two confirmed issues, from on-device logging:
+1. **Height oscillation.** The reorder FlatList's `onLayout` height flips **continuously** between the real viewport (~`758`dp) and a collapsed ~`83`dp and never settles. The library stores the *last* `onLayout` height as `flatListSize` and derives its autoscroll thresholds from it: top `= 0.1 × h`, bottom `= 0.9 × h`. When it lands on `83`, the bottom threshold sits **mid-screen** (`~75px`) → a small downward drag triggers runaway downward autoscroll; the top zone shrinks to `~8px` (matches the observed "up only very near the top, down almost everywhere"). The pager drives this re-measure on the animated list — an explicit-height wrapper, only-grow measurement, and container measurement all failed to stop the FlatList itself from re-measuring to `83`.
+2. **Reanimated 4 frozen-worklet mutation.** Warning `[Worklets] Tried to modify key N of an object which has been already passed to a worklet` — the library mutates shared-value arrays (`itemOffset`/`itemSize`) that Reanimated 4 freezes, so per-item position tracking is also suspect. Surfaces with many groups (index ≥ ~6).
+
+### Options to fix (pick one when picked up)
+- **(a)** Replace `react-native-reorderable-list` with a Reanimated-4-native drag-reorder library and re-verify it inside the pager.
+- **(b)** `patch-package` the library: fix the frozen-array mutations for Reanimated 4, and stop the `flatListSize` oscillation inside the pager (e.g., accept an explicit stable viewport height, or debounce/ignore the collapsed re-measure). Fragile.
+- **(c)** Wait for a library release supporting Reanimated 4 + pager, then re-enable autoscroll (remove `autoscrollSpeedScale={0}`).
+
+### Acceptance
+Reorder a group in a long list; the screen auto-scrolls **only** when the dragged item is near the top/bottom edge (like every other app), with swipe-between-tabs still working from anywhere on Groups.
 
 ---
 

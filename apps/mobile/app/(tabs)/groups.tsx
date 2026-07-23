@@ -9,7 +9,7 @@ import {
   type Group,
 } from '@shopping-check-list/domain';
 import { randomUUID } from 'expo-crypto';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -17,6 +17,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { Gesture } from 'react-native-gesture-handler';
 import ReorderableList, {
   reorderItems,
   useReorderableDrag,
@@ -63,6 +64,15 @@ export default function GroupsScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<Group | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Group | null>(null);
+
+  // Reorder pan that yields horizontal swipes to the swipe-between-tabs pager
+  // (P1-T2). activeOffsetY means the drag only engages once the finger has moved
+  // vertically — so a sideways swipe never activates the reorder and flows to
+  // the pager (navigating tabs), while a vertical drag on the grab handle still
+  // reorders. We deliberately do NOT add failOffsetX: it fails the drag on the
+  // small sideways jitter of a vertical drag and corrupts the library's
+  // drag-direction tracking.
+  const reorderPan = useMemo(() => Gesture.Pan().activeOffsetY([-12, 12]), []);
 
   // Mirror the live, sorted groups locally so a drag can update positions
   // immediately; Firestore's push (after we persist) reconciles this back.
@@ -192,6 +202,14 @@ export default function GroupsScreen() {
           contentContainerStyle={styles.listContent}
           data={ordered}
           onReorder={handleReorder}
+          panGesture={reorderPan}
+          // Autoscroll disabled (P1-T2): inside the material-top-tabs swipe pager
+          // the list mis-measures its own height (oscillates 758 <-> 83), so its
+          // autoscroll threshold lands mid-screen and runs away. speedScale 0
+          // stops the autoscroll movement (drag still works); reorder is limited
+          // to the on-screen area — scroll first, then drag, for a long list.
+          // See tickets.md P1-T2 for the full investigation.
+          autoscrollSpeedScale={0}
           keyExtractor={(group) => group.id}
           // The add button lives inside the list so it scrolls away with the
           // groups, saving header space.
